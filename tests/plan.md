@@ -14,8 +14,6 @@
   cypress-terminal-report, baseUrl placeholder `http://localhost:3000`)
 
 ## Open decisions
-- **AD-QA-1** (arc42 §9): Cypress vs Playwright is still marked "pending" — scaffold already
-  assumes Cypress. Needs a conscious decision logged before E2E specs are written.
 - `cypress.config.ts` baseUrl needs updating once the frontend dev server exists.
 
 ## Confirmed tech stack (arc42)
