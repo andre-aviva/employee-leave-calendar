@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "dom"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "types": ["cypress", "node", "cypress-terminal-report", "cypress-recurse", "cypress-real-events"]
+  },
+  "include": ["cypress/**/*.ts", "cypress.config.ts"]
+}
