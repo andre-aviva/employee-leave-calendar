@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using FluentAssertions;
 using LeaveCalendar.IntegrationTests.Infrastructure;
 
@@ -9,6 +8,16 @@ namespace LeaveCalendar.IntegrationTests.Features;
 public class ListLeaveTypesTests(ApiFactory factory) : IntegrationTestBase(factory)
 {
     private record LeaveTypeDto(Guid Id, string Name, string ColourHex, string RegisterableBy);
+
+    private static void AssertSeededLeaveTypes(IReadOnlyList<LeaveTypeDto> body)
+    {
+        body.Should().HaveCount(4);
+        body.Select(x => x.Name).Should().BeInAscendingOrder();
+        body.Should().Contain(x => x.Name == "Vacation" && x.ColourHex == "#2E7D32" && x.RegisterableBy == "Employee");
+        body.Should().Contain(x => x.Name == "Sick Leave" && x.ColourHex == "#C62828" && x.RegisterableBy == "Employee");
+        body.Should().Contain(x => x.Name == "Public Holiday" && x.ColourHex == "#1565C0" && x.RegisterableBy == "Admin");
+        body.Should().Contain(x => x.Name == "Other" && x.ColourHex == "#6A1B9A" && x.RegisterableBy == "Employee");
+    }
 
     [Fact]
     public async Task ListLeaveTypes_anonymous_returns_401()
@@ -28,12 +37,7 @@ public class ListLeaveTypesTests(ApiFactory factory) : IntegrationTestBase(facto
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<LeaveTypeDto>>();
         body.Should().NotBeNull();
-        body!.Should().HaveCount(4);
-        body.Select(x => x.Name).Should().BeInAscendingOrder();
-        body.Should().Contain(x => x.Name == "Vacation" && x.ColourHex == "#2E7D32" && x.RegisterableBy == "Employee");
-        body.Should().Contain(x => x.Name == "Sick Leave" && x.ColourHex == "#C62828" && x.RegisterableBy == "Employee");
-        body.Should().Contain(x => x.Name == "Public Holiday" && x.ColourHex == "#1565C0" && x.RegisterableBy == "Admin");
-        body.Should().Contain(x => x.Name == "Other" && x.ColourHex == "#6A1B9A" && x.RegisterableBy == "Employee");
+        AssertSeededLeaveTypes(body!);
     }
 
     [Fact]
@@ -46,6 +50,6 @@ public class ListLeaveTypesTests(ApiFactory factory) : IntegrationTestBase(facto
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<List<LeaveTypeDto>>();
         body.Should().NotBeNull();
-        body!.Should().HaveCount(4);
+        AssertSeededLeaveTypes(body!);
     }
 }
