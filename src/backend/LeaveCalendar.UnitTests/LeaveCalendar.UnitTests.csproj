@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LeaveCalendar.Domain\LeaveCalendar.Domain.csproj" />
+    <ProjectReference Include="..\LeaveCalendar.Web\LeaveCalendar.Web.csproj" />
   </ItemGroup>
 
 </Project>
