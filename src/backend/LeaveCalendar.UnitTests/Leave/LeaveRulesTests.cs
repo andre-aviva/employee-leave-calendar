@@ -58,7 +58,7 @@ public class LeaveRulesTests
     {
         var existing = new[] { Reg(Guid.NewGuid(), 12, 14) };
         FluentActions.Invoking(() => LeaveRules.EnsureNoOverlap(new LeavePeriod(D(10), D(12)), existing))
-            .Should().Throw<DomainRuleException>();
+            .Should().Throw<DomainRuleException>().Which.Code.Should().Be(LeaveErrorCodes.Overlap);
     }
     [Fact] public void Excluded_self_does_not_count_as_overlap()
     {
