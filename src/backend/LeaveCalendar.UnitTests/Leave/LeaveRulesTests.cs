@@ -41,6 +41,8 @@ public class LeaveRulesTests
             .Should().Throw<DomainRuleException>().Which.Code.Should().Be(LeaveErrorCodes.TypeNotRegisterable);
     [Fact] public void Admin_can_register_any_type() =>
         FluentActions.Invoking(() => LeaveRules.EnsureTypeRegisterableBy(Type(RegisterableBy.Admin), Role.Admin)).Should().NotThrow();
+    [Fact] public void Admin_can_register_employee_type() =>
+        FluentActions.Invoking(() => LeaveRules.EnsureTypeRegisterableBy(Type(RegisterableBy.Employee), Role.Admin)).Should().NotThrow();
 
     // --- EnsureNoOverlap (rule 1) ---
     [Fact] public void No_overlap_with_separate_existing_passes()
