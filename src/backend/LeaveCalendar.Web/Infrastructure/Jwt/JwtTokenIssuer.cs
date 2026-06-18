@@ -25,7 +25,7 @@ public sealed class JwtTokenIssuer : IJwtTokenIssuer
         {
             new Claim(JwtRegisteredClaimNames.Sub, employee.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Name, employee.Name),
-            new Claim(ClaimTypes.Role, employee.Role.ToString()),
+            new Claim("role", employee.Role.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, employee.Username),
         };
 
