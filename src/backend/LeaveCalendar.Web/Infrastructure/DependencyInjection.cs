@@ -1,6 +1,7 @@
 using FluentValidation;
 using LeaveCalendar.Web.Common;
 using LeaveCalendar.Web.Infrastructure.Identity;
+using LeaveCalendar.Web.Infrastructure.Jwt;
 using LeaveCalendar.Web.Infrastructure.Persistence;
 using LeaveCalendar.Web.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,8 @@ public static class DependencyInjection
         var services = builder.Services;
         services.AddDbContext<LeaveDbContext>(o =>
             o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+        services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+        services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddHttpContextAccessor();
