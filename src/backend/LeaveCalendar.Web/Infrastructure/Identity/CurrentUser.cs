@@ -4,26 +4,22 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace LeaveCalendar.Web.Infrastructure.Identity;
 
-public sealed class CurrentUser : ICurrentUser
+public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUser
 {
-    private readonly ClaimsPrincipal _user;
-
-    public CurrentUser(IHttpContextAccessor httpContextAccessor)
-    {
-        _user = httpContextAccessor.HttpContext?.User
+    private ClaimsPrincipal User =>
+        httpContextAccessor.HttpContext?.User
             ?? throw new InvalidOperationException("No HTTP context available.");
-    }
 
     public Guid EmployeeId =>
-        Guid.Parse(_user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+        Guid.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)
             ?? throw new InvalidOperationException("'sub' claim is missing."));
 
     public Role Role =>
-        Enum.Parse<Role>(_user.FindFirstValue("role")
+        Enum.Parse<Role>(User.FindFirstValue("role")
             ?? throw new InvalidOperationException("'role' claim is missing."));
 
     public bool IsAdmin => Role == Role.Admin;
 
     public string Name =>
-        _user.FindFirstValue(JwtRegisteredClaimNames.Name) ?? string.Empty;
+        User.FindFirstValue(JwtRegisteredClaimNames.Name) ?? string.Empty;
 }
