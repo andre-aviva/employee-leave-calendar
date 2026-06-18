@@ -11,6 +11,14 @@ public sealed class DomainExceptionHandler(IProblemDetailsService problemDetails
         ProblemDetails problem;
         switch (exception)
         {
+            case UnauthorizedException:
+                problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Unauthorized",
+                    Type = "https://datatracker.ietf.org/doc/html/rfc9457"
+                };
+                break;
             case ValidationException ve:
                 problem = new ProblemDetails
                 {
