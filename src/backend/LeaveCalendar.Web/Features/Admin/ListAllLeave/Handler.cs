@@ -40,6 +40,9 @@ public static class Handler
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)actualPageSize);
 
+        // Clamp page to [1, max(totalPages, 1)] so an out-of-range page returns the last page
+        actualPage = Math.Min(actualPage, Math.Max(totalPages, 1));
+
         var rows = await query
             .OrderByDescending(x => x.r.StartDate)
             .Skip((actualPage - 1) * actualPageSize)

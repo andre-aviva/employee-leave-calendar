@@ -190,4 +190,35 @@ public class ListAllLeaveTests(ApiFactory factory) : IntegrationTestBase(factory
         // page 1 with desc sort should return the latest (id3 Jul 20)
         items[0].GetProperty("id").GetGuid().Should().Be(id3);
     }
+
+    [Fact]
+    public async Task ListAllLeave_pageOutOfRange_clampsToLastPage()
+    {
+        await Factory.ResetAsync();
+        var id1 = Guid.NewGuid();
+        var id2 = Guid.NewGuid();
+        var id3 = Guid.NewGuid();
+        // 3 records, pageSize=2 → totalPages=2; last page (page 2) has 1 item
+        await SeedAsync(
+            MakeReg(id1, EmployeeId, VacationTypeId,  new DateOnly(2026, 7, 1),  new DateOnly(2026, 7, 5)),
+            MakeReg(id2, NoraId,     SickLeaveTypeId,  new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 12)),
+            MakeReg(id3, EmployeeId, OtherTypeId,      new DateOnly(2026, 7, 20), new DateOnly(2026, 7, 22)));
+
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+        // Request page=9, which is beyond totalPages=2
+        var response = await client.GetAsync("/api/admin/leave?page=9&pageSize=2");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("totalPages").GetInt32().Should().Be(2);
+        body.GetProperty("totalCount").GetInt32().Should().Be(3);
+        // Clamped page should be 2 (the last page), not 9
+        body.GetProperty("page").GetInt32().Should().Be(2);
+        body.GetProperty("pageSize").GetInt32().Should().Be(2);
+
+        var items = body.GetProperty("items").EnumerateArray().ToList();
+        // desc sort: id3(Jul 20), id2(Jul 10), id1(Jul 1) → page 2 with size 2 = id1(Jul 1)
+        items.Should().HaveCount(1);
+        items[0].GetProperty("id").GetGuid().Should().Be(id1);
+    }
 }
