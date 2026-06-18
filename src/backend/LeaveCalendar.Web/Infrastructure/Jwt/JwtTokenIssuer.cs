@@ -10,17 +10,17 @@ namespace LeaveCalendar.Web.Infrastructure.Jwt;
 public sealed class JwtTokenIssuer : IJwtTokenIssuer
 {
     private readonly JwtOptions _options;
+    private readonly SigningCredentials _credentials;
 
     public JwtTokenIssuer(IOptions<JwtOptions> options)
     {
         _options = options.Value;
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
+        _credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }
 
     public string Issue(Employee employee)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, employee.Id.ToString()),
@@ -34,7 +34,7 @@ public sealed class JwtTokenIssuer : IJwtTokenIssuer
             audience: _options.Audience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
-            signingCredentials: credentials);
+            signingCredentials: _credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
