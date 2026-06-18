@@ -19,7 +19,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("Spa");
-// app.UseAuthentication(); app.UseAuthorization();  // <-- enabled in PR 3
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" })).AllowAnonymous();
 app.MapEndpoints();
 
