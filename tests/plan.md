@@ -276,7 +276,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 
 ## Known issues / blockers
 
-- **Bug** `LeaveRules.cs:38`: `EnsureEditableByEmployee` uses `reg.StartDate < today` — allows editing/deleting leave starting today. Spec (My Leave §1, §4.1) says **future only**. Fix: change `<` to `<=`.
+- **Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today — spec (My Leave §1, §4.1) says **future only**. Note: registering leave for today is allowed.
 - **Admin slices not yet implemented** — `ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave` are missing. Blocks all Leave Management E2E tests.
 - **Frontend not yet implemented** — blocks all E2E tests.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
