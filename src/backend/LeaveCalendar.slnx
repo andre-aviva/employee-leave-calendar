@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="LeaveCalendar.Domain/LeaveCalendar.Domain.csproj" />
-  <Project Path="LeaveCalendar.IntegrationTests/LeaveCalendar.IntegrationTests.csproj" />
-  <Project Path="LeaveCalendar.UnitTests/LeaveCalendar.UnitTests.csproj" />
-  <Project Path="LeaveCalendar.Web/LeaveCalendar.Web.csproj" />
-</Solution>
