@@ -1,10 +1,12 @@
 using LeaveCalendar.Web.Infrastructure.Identity;
 using LeaveCalendar.Web.Infrastructure.Persistence;
+using LeaveCalendar.Web.Infrastructure.Time;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -12,6 +14,9 @@ namespace LeaveCalendar.IntegrationTests.Infrastructure;
 
 public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    /// <summary>Fixed "today" used across all date-rule integration tests.</summary>
+    public static readonly DateOnly FakeToday = new(2026, 6, 15);
+
     private readonly PostgreSqlContainer _db = new PostgreSqlBuilder("postgres:16-alpine").Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -24,6 +29,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             ["Jwt:Audience"] = "leave-calendar-tests",
             ["Jwt:SigningKey"] = "test-signing-key-at-least-32-bytes-long!!"
         }));
+        builder.ConfigureServices(services =>
+        {
+            // Replace the real clock with a fixed fake so date-rule tests are deterministic.
+            services.RemoveAll<IClock>();
+            services.AddSingleton<IClock>(new FakeClock(FakeToday));
+        });
     }
 
     public async Task InitializeAsync()
