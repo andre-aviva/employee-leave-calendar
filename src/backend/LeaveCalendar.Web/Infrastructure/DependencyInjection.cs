@@ -23,6 +23,22 @@ public static class DependencyInjection
         services.AddDbContext<LeaveDbContext>(o =>
             o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
         services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+        // ── JWT fail-fast guard ───────────────────────────────────────────────
+        // Validation runs before the first request is served (OptionsValidationHostedService),
+        // which means it fires after WebApplicationFactory's ConfigureWebHost overrides
+        // have been applied — the integration harness passes, production with no key throws.
+        services.AddOptions<JwtOptions>()
+            .Validate(o =>
+                !string.IsNullOrEmpty(o.SigningKey) && Encoding.UTF8.GetByteCount(o.SigningKey) >= 32,
+                "Jwt:SigningKey must be supplied via configuration/secrets and its UTF-8 encoding must be at least 32 bytes (256 bits) for HS256.")
+            .Validate(o => !string.IsNullOrEmpty(o.Issuer),
+                "Jwt:Issuer must be supplied via configuration/secrets.")
+            .Validate(o => !string.IsNullOrEmpty(o.Audience),
+                "Jwt:Audience must be supplied via configuration/secrets.")
+            .ValidateOnStart();
+        // ─────────────────────────────────────────────────────────────────────
+
         services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
