@@ -42,5 +42,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await ctx.Database.ExecuteSqlRawAsync("TRUNCATE TABLE leave_registrations RESTART IDENTITY CASCADE;");
     }
 
-    public new async Task DisposeAsync() => await _db.DisposeAsync();
+    public new async Task DisposeAsync()
+    {
+        await base.DisposeAsync();
+        await _db.DisposeAsync();
+    }
 }
