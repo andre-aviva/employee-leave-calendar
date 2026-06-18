@@ -25,7 +25,7 @@
 | Layer | Status |
 |---|---|
 | Backend: SignIn, GetCurrentUser, ListLeaveTypes, ListEmployees, ViewCalendar, ListMyLeave, RegisterMyLeave, EditMyLeave, DeleteMyLeave | Done |
-| Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | **Not yet implemented** |
+| Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, POM skill |
 
@@ -277,7 +277,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 ## Known issues / blockers
 
 - **Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today — spec (My Leave §1, §4.1) says **future only**. Note: registering leave for today is allowed.
-- **Admin slices not yet implemented** — `ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave` are missing. Blocks all Leave Management E2E tests.
+- ~~**Admin slices not yet implemented**~~ — resolved in #12; all four admin slices (`ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave`) are implemented and integration-tested.
 - **Frontend not yet implemented** — blocks all E2E tests.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
