@@ -17,6 +17,10 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     /// <summary>Fixed "today" used across all date-rule integration tests.</summary>
     public static readonly DateOnly FakeToday = new(2026, 6, 15);
 
+    public const string TestJwtSigningKey = "test-signing-key-at-least-32-bytes-long!!";
+    public const string TestJwtIssuer = "leave-calendar-tests";
+    public const string TestJwtAudience = "leave-calendar-tests";
+
     private readonly PostgreSqlContainer _db = new PostgreSqlBuilder("postgres:16-alpine").Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -25,9 +29,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["ConnectionStrings:Default"] = _db.GetConnectionString(),
-            ["Jwt:Issuer"] = "leave-calendar-tests",
-            ["Jwt:Audience"] = "leave-calendar-tests",
-            ["Jwt:SigningKey"] = "test-signing-key-at-least-32-bytes-long!!"
+            ["Jwt:Issuer"] = TestJwtIssuer,
+            ["Jwt:Audience"] = TestJwtAudience,
+            ["Jwt:SigningKey"] = TestJwtSigningKey
         }));
         builder.ConfigureServices(services =>
         {

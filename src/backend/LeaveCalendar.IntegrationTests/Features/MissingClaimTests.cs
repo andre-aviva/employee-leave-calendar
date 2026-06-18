@@ -15,21 +15,18 @@ namespace LeaveCalendar.IntegrationTests.Features;
 /// </summary>
 public class MissingClaimTests(ApiFactory factory) : IntegrationTestBase(factory)
 {
-    // Must match what ApiFactory injects
-    private const string TestSigningKey = "test-signing-key-at-least-32-bytes-long!!";
-    private const string TestIssuer     = "leave-calendar-tests";
-    private const string TestAudience   = "leave-calendar-tests";
+    // References constants from ApiFactory (single source of truth)
 
     private static string MintTokenWithoutSub()
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSigningKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ApiFactory.TestJwtSigningKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // Deliberately omit "sub" — only include "role" so the token passes signature/
         // issuer/audience validation but triggers the missing-claim guard in CurrentUser.
         var token = new JwtSecurityToken(
-            issuer: TestIssuer,
-            audience: TestAudience,
+            issuer: ApiFactory.TestJwtIssuer,
+            audience: ApiFactory.TestJwtAudience,
             claims: [new System.Security.Claims.Claim("role", "Employee")],
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds);
