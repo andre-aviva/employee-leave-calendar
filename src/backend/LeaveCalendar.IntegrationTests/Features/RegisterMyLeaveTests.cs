@@ -162,4 +162,49 @@ public class RegisterMyLeaveTests(ApiFactory factory) : IntegrationTestBase(fact
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task RegisterMyLeave_adjacentOverlap_startEqualsExistingEnd_returns_422_OVERLAP()
+    {
+        await Factory.ResetAsync();
+        // Seed an existing registration: 2026-07-01 .. 2026-07-10
+        await SeedRegistrationAsync(Guid.NewGuid(), EmployeeId,
+            new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 10));
+
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // New registration: StartDate == existing EndDate (2026-07-10) → inclusive overlap
+        var response = await client.PostAsJsonAsync("/api/me/leave",
+            new RegisterRequest(VacationTypeId, "2026-07-10", "2026-07-15"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        json.RootElement.GetProperty("code").GetString().Should().Be("OVERLAP");
+    }
+
+    [Fact]
+    public async Task RegisterMyLeave_singleDay_startEqualsEnd_returns_201()
+    {
+        await Factory.ResetAsync();
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // Single-day leave: StartDate == EndDate
+        var response = await client.PostAsJsonAsync("/api/me/leave",
+            new RegisterRequest(VacationTypeId, "2026-07-01", "2026-07-01"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task RegisterMyLeave_adminRegistersPublicHoliday_returns_201()
+    {
+        await Factory.ResetAsync();
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+
+        // Admin registers Public Holiday (Admin-only type) via the /me/leave self-service path
+        var response = await client.PostAsJsonAsync("/api/me/leave",
+            new RegisterRequest(PublicHolidayId, "2026-07-01", "2026-07-01"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
 }

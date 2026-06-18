@@ -163,4 +163,23 @@ public class EditMyLeaveTests(ApiFactory factory) : IntegrationTestBase(factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task EditMyLeave_changeToAdminOnlyType_returns_422_TYPE_NOT_REGISTERABLE()
+    {
+        await Factory.ResetAsync();
+        var regId = Guid.NewGuid();
+        // Seed a future vacation registration for Eddie
+        await SeedRegistrationAsync(regId, EmployeeId, new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 5));
+
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // Try to change to Public Holiday (Admin-only type)
+        var response = await client.PutAsJsonAsync($"/api/me/leave/{regId}",
+            new EditRequest(PublicHolidayId, "2026-07-01", "2026-07-05"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        json.RootElement.GetProperty("code").GetString().Should().Be("TYPE_NOT_REGISTERABLE");
+    }
 }
