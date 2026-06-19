@@ -47,20 +47,12 @@ class AdminLeavePage {
     return cy.get(element('AdminLeave_TypeFilter'));
   }
 
-  static getStatusFilter() {
-    return cy.get(element('AdminLeave_StatusFilter'));
-  }
-
   static getFromFilter() {
     return cy.get(element('AdminLeave_FromFilter'));
   }
 
   static getToFilter() {
     return cy.get(element('AdminLeave_ToFilter'));
-  }
-
-  static getResetButton() {
-    return cy.get(element('AdminLeave_ResetFilter'));
   }
 
   static getPrevPage() {
@@ -87,17 +79,13 @@ class AdminLeavePage {
     this.getEmployeeFilter().clear().type(name);
   }
 
-  static filterByType(name: string) {
-    this.getTypeFilter().select(name);
+  static filterByType(names: string[]) {
+    this.getTypeFilter().select(names);
   }
 
   static filterByDateRange(from: string, to: string) {
     this.getFromFilter().clear().type(from);
     this.getToFilter().clear().type(to);
-  }
-
-  static resetFilters() {
-    this.getResetButton().click();
   }
 
   static checkEmptyState() {

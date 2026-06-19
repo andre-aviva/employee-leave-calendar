@@ -180,6 +180,27 @@ Signed-in user name displayed on the right alongside the sign-out control.
 
 ---
 
+## Design System additions not yet in POMs — pending UX alignment
+
+The items below appear in the Design System (Page Layouts / Feedback Patterns) but **not** in the functional requirements. POMs currently follow the functional requirements only. Confirm with UX team before adding.
+
+| Feature | Design System says | POM status |
+|---|---|---|
+| Calendar Overview — "Request Leave" button | Visible to Employee only, not to Admin | Not in `CalendarPage` |
+| Navigation Bar — Admin role | Sees Calendar + Leave Management only; My Leave link hidden | `checkAdminLinks()` currently shows My Leave as visible |
+| My Leave — success feedback | Toast top-right after register/edit, auto-dismisses after 4s | No `SuccessToast` getter in `MyLeavePage` |
+| Leave Management — filter bar | Includes Status filter | No `getStatusFilter()` in `AdminLeavePage` |
+| Leave Management — filter bar | Includes Reset button | No `getResetButton()` / `resetFilters()` in `AdminLeavePage` |
+| Leave type colours | Each leave type has a colour (chip + badge) | `colour` removed from `TestLeaveType` and test data — add back once design finalises the hex values |
+| My Leave — FilterBar | Filters: Type \| Status \| Year \| Reset | No filter methods in `MyLeavePage`; functional spec has no filters on My Leave |
+| My Leave — Pagination | Paginated table (same pattern as Leave Management) | No pagination getters in `MyLeavePage`; functional spec has no pagination on My Leave |
+| My Leave — Status column | Table columns include Status; Description column removed | `MyLeavePage` POM reflects functional spec columns (no Status) |
+| Leave Management — Status column | Table columns include Status; Description column removed | `AdminLeavePage` POM reflects functional spec columns (no Status) |
+| Leave Type field error | `TYPE_NOT_REGISTERABLE` → "This leave type cannot be requested." below Leave Type field | `getLeaveTypeError()` removed from `LeaveForm` — add back if Design System is adopted |
+| Sign In — field name | Design System: "Email field"; functional spec implies username | `SignIn_UsernameInput` selector may need renaming to `SignIn_EmailInput` |
+
+---
+
 ## DISCREPANCY — Design System vs Functional Requirements
 
 The Design System Page Layouts page introduces a status concept and approval workflow not present in the functional requirements. These conflict on My Leave and Leave Management actions:
@@ -196,13 +217,15 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 
 ## Page objects to build (once frontend exists)
 
-- [ ] `SignInPage`
-- [ ] `NavigationBar` (shared — visible on every authenticated page)
-- [ ] `CalendarPage`
-- [ ] `MyLeavePage`
-- [ ] `LeaveForm` (shared modal — used by My Leave register/edit)
-- [ ] `ConfirmationDialog` (shared — used by delete on My Leave and Leave Management)
-- [ ] `AdminLeavePage` (blocks on admin slices being implemented)
+- [x] `SignInPage`
+- [x] `NavigationBar` (shared — visible on every authenticated page)
+- [x] `CalendarPage`
+- [x] `MyLeavePage`
+- [x] `LeaveForm` (shared modal — used by My Leave register/edit)
+- [x] `ConfirmationDialog` (shared — used by delete on My Leave and Leave Management)
+- [x] `AdminLeavePage` (blocks on admin slices being implemented)
+
+**TODO (post-frontend):** Once the frontend is implemented, verify all `data-test` selectors in the POMs against the actual rendered HTML and update any that don't match before writing specs.
 
 ---
 

@@ -29,10 +29,6 @@ class CalendarPage {
     return cy.get(element('EmployeeLeaveChip'));
   }
 
-  static getRequestLeaveButton() {
-    return cy.get(element('CalendarPage_RequestLeaveButton'));
-  }
-
   static getErrorState() {
     return cy.get(element('CalendarPage_ErrorState'));
   }
@@ -47,18 +43,6 @@ class CalendarPage {
 
   static clickNextMonth() {
     this.getNextButton().click();
-  }
-
-  static clickRequestLeave() {
-    this.getRequestLeaveButton().click();
-  }
-
-  static checkRequestLeaveButtonVisible() {
-    this.getRequestLeaveButton().should('be.visible');
-  }
-
-  static checkRequestLeaveButtonNotExist() {
-    cy.get(element('CalendarPage_RequestLeaveButton')).should('not.exist');
   }
 
   static checkErrorState() {

@@ -46,10 +46,6 @@ class LeaveForm {
     return cy.get(element('LeaveForm_EndDateError'));
   }
 
-  static getLeaveTypeError() {
-    return cy.get(element('LeaveForm_LeaveTypeError'));
-  }
-
   static getFormError() {
     return cy.get(element('LeaveForm_FormError'));
   }
@@ -100,10 +96,6 @@ class LeaveForm {
 
   static checkEndDateError(text: string) {
     this.getEndDateError().should('contain.text', text);
-  }
-
-  static checkLeaveTypeError(text: string) {
-    this.getLeaveTypeError().should('contain.text', text);
   }
 
   static checkFormError(text: string) {

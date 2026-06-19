@@ -29,8 +29,8 @@ class NavigationBar {
 
   static checkAdminLinks() {
     this.getCalendarLink().should('be.visible');
+    this.getMyLeaveLink().should('be.visible');
     this.getLeaveManagementLink().should('be.visible');
-    cy.get(element('NavBar_MyLeaveLink')).should('not.exist');
   }
 
   static checkUserName(name: string) {

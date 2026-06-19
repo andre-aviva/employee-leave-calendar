@@ -41,10 +41,6 @@ class MyLeavePage {
     return cy.get(element('MyLeave_RetryButton'));
   }
 
-  static getSuccessToast() {
-    return cy.get(element('SuccessToast'));
-  }
-
   static clickRegister() {
     this.getRegisterButton().click();
   }
@@ -83,9 +79,6 @@ class MyLeavePage {
       .should('not.exist');
   }
 
-  static checkSuccessToastVisible() {
-    this.getSuccessToast().should('be.visible');
-  }
 }
 
 export default MyLeavePage;
