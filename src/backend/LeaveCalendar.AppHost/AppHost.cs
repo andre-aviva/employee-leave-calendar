@@ -1,8 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder.AddPostgres("postgres")
-    .WithDataVolume()
-    .WithPgWeb();
+    .WithDataVolume()   // persistent volume so seeded data survives restarts
+    .WithPgWeb();       // browse the DB from the dashboard
 
 var leavecalendar = postgres.AddDatabase("leavecalendar");
 
