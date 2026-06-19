@@ -43,10 +43,14 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             // at build time, before ConfigureAppConfiguration overrides are applied.
             // Remove every EF/Aspire registration for LeaveDbContext and re-add a plain
             // AddDbContext pointing directly at the Testcontainers connection string.
+            // Sweep covers pool/options descriptors registered by AddNpgsqlDbContext
+            // (verified against Aspire.Npgsql.EntityFrameworkCore.PostgreSQL 9.4.5),
+            // including the non-generic DbContextOptions base some Aspire versions register.
             var leaveDbDescriptors = services
                 .Where(d =>
                     d.ServiceType == typeof(LeaveDbContext) ||
                     d.ServiceType == typeof(DbContextOptions<LeaveDbContext>) ||
+                    d.ServiceType == typeof(DbContextOptions) ||
                     (d.ServiceType.IsGenericType &&
                      d.ServiceType.GenericTypeArguments.Length > 0 &&
                      d.ServiceType.GenericTypeArguments[0] == typeof(LeaveDbContext)))
