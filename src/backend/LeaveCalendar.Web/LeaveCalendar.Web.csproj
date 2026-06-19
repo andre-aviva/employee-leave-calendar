@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LeaveCalendar.Domain\LeaveCalendar.Domain.csproj" />
+    <ProjectReference Include="..\LeaveCalendar.ServiceDefaults\LeaveCalendar.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
