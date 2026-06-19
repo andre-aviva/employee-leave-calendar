@@ -9,7 +9,6 @@ export interface TestEmployee {
 
 export interface TestLeaveType {
   name: string;
-  colour: string;
   registerableBy: EmployeeRole[];
 }
 
