@@ -253,8 +253,6 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 
 | Persona | Scenario |
 |---|---|
-| Employee | "Request Leave" button is visible |
-| Admin | "Request Leave" button is NOT visible |
 | Employee, Admin | Month navigation — previous/next month loads correct data |
 | Employee, Admin | Multi-day leave spanning a month boundary shows in both months |
 | Employee, Admin | Empty month — all day cells render, no leave chips |
@@ -265,14 +263,20 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Persona | Scenario |
 |---|---|
 | Employee | Empty state shown when no registrations exist |
-| Employee | Register — happy path (future start date, valid type) → success toast appears and dismisses |
+| Employee | Error state — retry button reloads data |
+| Employee | Register — happy path (future start date, valid type) → form closes, table refreshes |
+| Employee | Register — start date = today → succeeds (today is a valid start date) |
 | Employee | Register — past start date → START_DATE_IN_PAST error below Start Date field |
+| Employee | Register — end date before start date → END_DATE_ERROR below End Date field |
 | Employee | Register — overlap with existing → OVERLAP form-level error |
 | Employee | Register — restricted leave type (Public Holiday) → TYPE_NOT_REGISTERABLE error below Leave Type field |
+| Employee | Register — Cancel closes form without saving |
 | Employee | Edit and delete actions only visible on registrations with a **future** start date — not visible on today-dated or past-dated registrations |
-| Employee | Edit — happy path (future registration) |
+| Employee | Edit — happy path (future registration) → form closes, table refreshes |
 | Employee | Edit — set new start date to today → succeeds (today is a valid new start date) |
 | Employee | Edit — set new start date to a past date → START_DATE_IN_PAST error below Start Date field |
+| Employee | Edit — end date before start date → END_DATE_ERROR below End Date field |
+| Employee | Edit — Cancel closes form without saving |
 | Employee | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Employee | Delete — Confirm → registration deleted, table refreshes |
 | Admin | Same register/edit/delete flows (Admin also uses My Leave for own leave) |
@@ -281,9 +285,18 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 
 | Persona | Scenario |
 |---|---|
-| Admin | Create leave for any employee, any leave type including Public Holiday |
-| Admin | Edit leave for any employee — no date restriction |
-| Admin | Delete leave for any employee — Confirmation Dialog required |
+| Admin | Empty state shown when no records match active filters |
+| Admin | Error state — retry button reloads data |
+| Admin | Create leave for any employee, any leave type including Public Holiday → table refreshes |
+| Admin | Create — end date before start date → END_DATE_ERROR below End Date field |
+| Admin | Create — overlap → OVERLAP form-level error |
+| Admin | Create — Cancel closes form without saving |
+| Admin | Edit leave for any employee — no date restriction → table refreshes |
+| Admin | Edit — Employee field is locked to the original employee |
+| Admin | Edit — end date before start date → END_DATE_ERROR below End Date field |
+| Admin | Edit — Cancel closes form without saving |
+| Admin | Delete — Confirmation Dialog appears; Cancel closes without deleting |
+| Admin | Delete — Confirm → registration deleted, table refreshes |
 | Admin | Overlap check still applies for admin create/edit → OVERLAP error |
 | Admin | Filtering by employee, type, date range |
 | Admin | Pagination — 20 records per page; changing a filter resets to page 1 |
@@ -301,7 +314,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 
 ## Known issues / blockers
 
-- **Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today — spec (My Leave §1, §4.1) says **future only**. Note: registering leave for today is allowed.
+- ~~**Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today~~ — fixed in #19.
 - ~~**Admin slices not yet implemented**~~ — resolved in #12; all four admin slices (`ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave`) are implemented and integration-tested.
 - **Frontend not yet implemented** — blocks all E2E tests.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
