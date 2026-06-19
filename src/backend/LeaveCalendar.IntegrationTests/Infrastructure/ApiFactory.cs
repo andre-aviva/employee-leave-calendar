@@ -28,7 +28,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("IntegrationTest");
         builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["ConnectionStrings:Default"] = _db.GetConnectionString(),
+            ["ConnectionStrings:leavecalendar"] = _db.GetConnectionString(),
             ["Jwt:Issuer"] = TestJwtIssuer,
             ["Jwt:Audience"] = TestJwtAudience,
             ["Jwt:SigningKey"] = TestJwtSigningKey
@@ -38,6 +38,23 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             // Replace the real clock with a fixed fake so date-rule tests are deterministic.
             services.RemoveAll<IClock>();
             services.AddSingleton<IClock>(new FakeClock(FakeToday));
+
+            // Aspire's AddNpgsqlDbContext uses AddDbContextPool and captures IConfiguration
+            // at build time, before ConfigureAppConfiguration overrides are applied.
+            // Remove every EF/Aspire registration for LeaveDbContext and re-add a plain
+            // AddDbContext pointing directly at the Testcontainers connection string.
+            var leaveDbDescriptors = services
+                .Where(d =>
+                    d.ServiceType == typeof(LeaveDbContext) ||
+                    d.ServiceType == typeof(DbContextOptions<LeaveDbContext>) ||
+                    (d.ServiceType.IsGenericType &&
+                     d.ServiceType.GenericTypeArguments.Length > 0 &&
+                     d.ServiceType.GenericTypeArguments[0] == typeof(LeaveDbContext)))
+                .ToList();
+            foreach (var d in leaveDbDescriptors)
+                services.Remove(d);
+            services.AddDbContext<LeaveDbContext>(o =>
+                o.UseNpgsql(_db.GetConnectionString()));
         });
     }
 

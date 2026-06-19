@@ -20,8 +20,7 @@ public static class DependencyInjection
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
         var services = builder.Services;
-        services.AddDbContext<LeaveDbContext>(o =>
-            o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+        builder.AddNpgsqlDbContext<LeaveDbContext>("leavecalendar");
         services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
         // ── JWT fail-fast guard ───────────────────────────────────────────────
