@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "src/backend/LeaveCalendar.AppHost/LeaveCalendar.AppHost.csproj"
+  }
+}

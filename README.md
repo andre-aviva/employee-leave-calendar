@@ -10,7 +10,7 @@ This repository is a monorepo holding the backend, frontend, end-to-end tests, a
 .
 ├── src/
 │   ├── backend/        .NET 10 Web API (Vertical Slice + Screaming, EF Core, PostgreSQL)
-│   │   ├── LeaveCalendar.AppHost/           Aspire orchestration root (run `aspire run` here)
+│   │   ├── LeaveCalendar.AppHost/           Aspire orchestration root (`aspire run`)
 │   │   ├── LeaveCalendar.ServiceDefaults/   OpenTelemetry / health / service discovery
 │   │   ├── LeaveCalendar.Domain/            entities + invariants (LeaveRules)
 │   │   ├── LeaveCalendar.Web/               Features/ slices, Infrastructure/, Common/
@@ -51,10 +51,13 @@ The whole stack — PostgreSQL, the API, and the frontend — is orchestrated wi
 
 ### Run the whole stack
 
+From the repository root:
+
 ```bash
-cd src/backend/LeaveCalendar.AppHost
 aspire run
 ```
+
+`aspire.config.json` (committed at the repo root) points the CLI at the AppHost project, so no `cd` into the project or `--project` flag is needed.
 
 This starts PostgreSQL (with a persistent data volume), runs the API — which applies EF Core migrations and seeds data on startup — installs the frontend's npm dependencies, and starts the Vite dev server. The Aspire dashboard opens automatically with clickable URLs for the API (Swagger), the frontend, and a database browser.
 
