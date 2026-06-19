@@ -15,3 +15,9 @@ Folder structure mirrors the backend's screaming architecture (feature-aligned).
 Named exports and function declarations only (no default exports). Typed `ComponentNameProps`. User-visible strings and 422 code mappings live in a co-located `ComponentName.resources.ts`. SCSS Modules use design-system variables and mixins only (no hardcoded colours or sizes; min-width breakpoint mixins only). Semantic HTML, WCAG 2.2 AA. Every interactive and content-bearing element carries a `data-test` attribute (`[Component]_[Element]`).
 
 Each component directory contains: `ComponentName.tsx`, `ComponentName.module.scss`, `ComponentName.resources.ts`, `ComponentName.stories.tsx`, `exampleData.ts`.
+
+## Current state
+
+`src/App.tsx` is a minimal wiring-check page (verifies the API is reachable through the Vite proxy). Build the real pages/components per the conventions above; replace `App.tsx` as the app grows.
+
+Run standalone (against a running API): `npm install && npm run dev`. Under `aspire run` the backend URL is injected automatically; standalone, set `VITE_API_URL` in `.env`.

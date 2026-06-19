@@ -10,6 +10,8 @@ This repository is a monorepo holding the backend, frontend, end-to-end tests, a
 .
 ├── src/
 │   ├── backend/        .NET 10 Web API (Vertical Slice + Screaming, EF Core, PostgreSQL)
+│   │   ├── LeaveCalendar.AppHost/           Aspire orchestration root (run `aspire run` here)
+│   │   ├── LeaveCalendar.ServiceDefaults/   OpenTelemetry / health / service discovery
 │   │   ├── LeaveCalendar.Domain/            entities + invariants (LeaveRules)
 │   │   ├── LeaveCalendar.Web/               Features/ slices, Infrastructure/, Common/
 │   │   ├── LeaveCalendar.UnitTests/         Domain + handler rules, no DB
@@ -37,8 +39,6 @@ This repository is a monorepo holding the backend, frontend, end-to-end tests, a
 
 The whole stack — PostgreSQL, the API, and the frontend — is orchestrated with [Aspire](https://aspire.dev). One command boots everything and opens a dashboard with live logs, traces, and health for every resource. There is no manual PostgreSQL install and no connection strings to manage by hand.
 
-> The Aspire orchestration described here is being wired up — see [the design spec](docs/superpowers/specs/2026-06-18-aspire-local-development-design.md). Until the AppHost and frontend build files land, these steps are the target workflow rather than the current state.
-
 ### Prerequisites
 
 - A container runtime — **Docker Desktop** or **Podman** (Aspire runs PostgreSQL in a container)
@@ -58,6 +58,14 @@ aspire run
 
 This starts PostgreSQL (with a persistent data volume), runs the API — which applies EF Core migrations and seeds data on startup — installs the frontend's npm dependencies, and starts the Vite dev server. The Aspire dashboard opens automatically with clickable URLs for the API (Swagger), the frontend, and a database browser.
 
+Seeded sign-in credentials (via `POST /api/auth/sign-in` with `{ "username", "password" }`):
+
+| Username | Password | Role |
+| --- | --- | --- |
+| `admin` | `Admin!123` | Admin |
+| `employee` | `Employee!123` | Employee |
+| `nora` | `Employee!123` | Employee |
+
 ### Frontend-only workflow
 
 Frontend developers who only want to work on the React app can run it on its own against the Aspire-hosted (or any running) API:
@@ -68,15 +76,16 @@ npm install
 npm run dev
 ```
 
-The Vite dev server proxies `/api/*` to the backend, so requests are same-origin (no CORS setup needed). Under `aspire run` the backend URL is injected automatically; running standalone, set it via `.env`.
+The Vite dev server proxies `/api/*` to the backend, so requests are same-origin (no CORS setup needed). Under `aspire run` the backend URL is injected automatically; running standalone, copy `.env.example` to `.env` and set `VITE_API_URL` there.
 
 ### Troubleshooting
 
 - **`aspire run` fails immediately** — make sure your container runtime (Docker Desktop / Podman) is running.
 - **Port already in use** — stop any standalone PostgreSQL or a previous `aspire run` still holding the ports.
+- **`aspire run` hangs at "Starting dashboard…"** — your Aspire CLI is older than the AppHost packages (13.4.5). Update it: `aspire update --self` (interactive) or re-run the install script. (New installs from the script already get a matching version.)
 
 ## Conventions
 
 Wire-format dates are ISO YYYY-MM-DD; the UI displays DD-MM-YYYY. "Today" is computed in Europe/Amsterdam. Business-rule violations return RFC 9457 ProblemDetails with stable 422 codes (OVERLAP, TYPE_NOT_REGISTERABLE, START_DATE_IN_PAST). See each subfolder README for area-specific conventions.
 
-This is a structure-only scaffold: folders carry README and .gitkeep placeholders, with no build files yet.
+The backend is fully implemented and the local stack runs end-to-end via Aspire (see **Local development**). The frontend currently holds a minimal wiring-check app; the full UI is built by a separate team per `src/frontend/README.md`.
