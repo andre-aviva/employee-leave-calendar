@@ -33,6 +33,48 @@ This repository is a monorepo holding the backend, frontend, end-to-end tests, a
 | Tests | xUnit + FluentAssertions (backend), Cypress + TypeScript (E2E) |
 | Auth | Stateless JWT, roles (Employee, Admin) in claims |
 
+## Local development
+
+The whole stack — PostgreSQL, the API, and the frontend — is orchestrated with [Aspire](https://aspire.dev). One command boots everything and opens a dashboard with live logs, traces, and health for every resource. There is no manual PostgreSQL install and no connection strings to manage by hand.
+
+> The Aspire orchestration described here is being wired up — see [the design spec](docs/superpowers/specs/2026-06-18-aspire-local-development-design.md). Until the AppHost and frontend build files land, these steps are the target workflow rather than the current state.
+
+### Prerequisites
+
+- A container runtime — **Docker Desktop** or **Podman** (Aspire runs PostgreSQL in a container)
+- **.NET 10 SDK**
+- **Node.js** (LTS) — for the frontend
+- The **Aspire CLI**:
+  ```bash
+  curl -sSL https://aspire.dev/install.sh | bash
+  ```
+
+### Run the whole stack
+
+```bash
+cd src/backend/LeaveCalendar.AppHost
+aspire run
+```
+
+This starts PostgreSQL (with a persistent data volume), runs the API — which applies EF Core migrations and seeds data on startup — installs the frontend's npm dependencies, and starts the Vite dev server. The Aspire dashboard opens automatically with clickable URLs for the API (Swagger), the frontend, and a database browser.
+
+### Frontend-only workflow
+
+Frontend developers who only want to work on the React app can run it on its own against the Aspire-hosted (or any running) API:
+
+```bash
+cd src/frontend
+npm install
+npm run dev
+```
+
+The Vite dev server proxies `/api/*` to the backend, so requests are same-origin (no CORS setup needed). Under `aspire run` the backend URL is injected automatically; running standalone, set it via `.env`.
+
+### Troubleshooting
+
+- **`aspire run` fails immediately** — make sure your container runtime (Docker Desktop / Podman) is running.
+- **Port already in use** — stop any standalone PostgreSQL or a previous `aspire run` still holding the ports.
+
 ## Conventions
 
 Wire-format dates are ISO YYYY-MM-DD; the UI displays DD-MM-YYYY. "Today" is computed in Europe/Amsterdam. Business-rule violations return RFC 9457 ProblemDetails with stable 422 codes (OVERLAP, TYPE_NOT_REGISTERABLE, START_DATE_IN_PAST). See each subfolder README for area-specific conventions.
