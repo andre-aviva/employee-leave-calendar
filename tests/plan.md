@@ -269,8 +269,10 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Register — past start date → START_DATE_IN_PAST error below Start Date field |
 | Employee | Register — overlap with existing → OVERLAP form-level error |
 | Employee | Register — restricted leave type (Public Holiday) → TYPE_NOT_REGISTERABLE error below Leave Type field |
-| Employee | Edit and delete actions only visible on registrations with a **future** start date |
+| Employee | Edit and delete actions only visible on registrations with a **future** start date — not visible on today-dated or past-dated registrations |
 | Employee | Edit — happy path (future registration) |
+| Employee | Edit — set new start date to today → succeeds (today is a valid new start date) |
+| Employee | Edit — set new start date to a past date → START_DATE_IN_PAST error below Start Date field |
 | Employee | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Employee | Delete — Confirm → registration deleted, table refreshes |
 | Admin | Same register/edit/delete flows (Admin also uses My Leave for own leave) |
