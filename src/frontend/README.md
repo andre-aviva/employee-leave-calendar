@@ -20,4 +20,4 @@ Each component directory contains: `ComponentName.tsx`, `ComponentName.module.sc
 
 `src/App.tsx` is a minimal wiring-check page (verifies the API is reachable through the Vite proxy). Build the real pages/components per the conventions above; replace `App.tsx` as the app grows.
 
-Run standalone (against a running API): `npm install && npm run dev`. Under `aspire run` the backend URL is injected automatically; standalone, set `VITE_API_URL` in `.env`.
+Run standalone (against a running API): `npm install && npm run dev`. Under `aspire run` the backend URL is injected automatically; standalone, copy `.env.example` to `.env` and set `VITE_API_URL` there.

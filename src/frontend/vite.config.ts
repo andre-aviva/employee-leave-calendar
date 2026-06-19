@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     process.env.services__api__https__0 ||
     process.env.services__api__http__0 ||
     env.VITE_API_URL ||
-    'https://localhost:7000'
+    'https://localhost:7237'
 
   const proxy = {
     '/api': { target, changeOrigin: true, secure: false },
