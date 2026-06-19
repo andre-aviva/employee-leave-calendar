@@ -35,6 +35,8 @@ public static class LeaveRules
 
     public static void EnsureEditableByEmployee(LeaveRegistration reg, DateOnly today)
     {
-        if (reg.StartDate < today) throw new DomainRuleException(LeaveErrorCodes.LeaveNotModifiable);
+        // Only future-dated registrations are editable/deletable by the employee;
+        // a registration starting today or in the past is immutable.
+        if (reg.StartDate <= today) throw new DomainRuleException(LeaveErrorCodes.LeaveNotModifiable);
     }
 }

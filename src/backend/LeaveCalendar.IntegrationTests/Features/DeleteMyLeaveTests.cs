@@ -76,6 +76,23 @@ public class DeleteMyLeaveTests(ApiFactory factory) : IntegrationTestBase(factor
     }
 
     [Fact]
+    public async Task DeleteMyLeave_ownTodayLeave_returns_422_LEAVE_NOT_MODIFIABLE()
+    {
+        await Factory.ResetAsync();
+        var regId = Guid.NewGuid();
+        // Start date equals FakeToday 2026-06-15 — deleting a registration that starts today is not allowed
+        await SeedRegistrationAsync(regId, EmployeeId, new DateOnly(2026, 6, 15), new DateOnly(2026, 6, 17));
+
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        var response = await client.DeleteAsync($"/api/me/leave/{regId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        json.RootElement.GetProperty("code").GetString().Should().Be("LEAVE_NOT_MODIFIABLE");
+    }
+
+    [Fact]
     public async Task DeleteMyLeave_anotherEmployeesRegistration_returns_404()
     {
         await Factory.ResetAsync();

@@ -129,6 +129,24 @@ public class EditMyLeaveTests(ApiFactory factory) : IntegrationTestBase(factory)
     }
 
     [Fact]
+    public async Task EditMyLeave_todayDatedLeave_returns_422_LEAVE_NOT_MODIFIABLE()
+    {
+        await Factory.ResetAsync();
+        var regId = Guid.NewGuid();
+        // Start date equals FakeToday 2026-06-15 — editing a registration that starts today is not allowed
+        await SeedRegistrationAsync(regId, EmployeeId, new DateOnly(2026, 6, 15), new DateOnly(2026, 6, 17));
+
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        var response = await client.PutAsJsonAsync($"/api/me/leave/{regId}",
+            new EditRequest(VacationTypeId, "2026-06-20", "2026-06-25"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        json.RootElement.GetProperty("code").GetString().Should().Be("LEAVE_NOT_MODIFIABLE");
+    }
+
+    [Fact]
     public async Task EditMyLeave_new_start_date_in_past_returns_422_START_DATE_IN_PAST()
     {
         await Factory.ResetAsync();

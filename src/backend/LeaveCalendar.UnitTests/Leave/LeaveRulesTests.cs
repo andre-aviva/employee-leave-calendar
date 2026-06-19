@@ -71,8 +71,9 @@ public class LeaveRulesTests
     // --- EnsureEditableByEmployee (rule 3: only future-dated own leave) ---
     [Fact] public void Editing_future_dated_leave_passes() =>
         FluentActions.Invoking(() => LeaveRules.EnsureEditableByEmployee(Reg(Guid.NewGuid(), 11, 12), today: D(10))).Should().NotThrow();
-    [Fact] public void Editing_today_dated_leave_passes() =>
-        FluentActions.Invoking(() => LeaveRules.EnsureEditableByEmployee(Reg(Guid.NewGuid(), 10, 12), today: D(10))).Should().NotThrow();
+    [Fact] public void Editing_today_dated_leave_throws_LEAVE_NOT_MODIFIABLE() =>
+        FluentActions.Invoking(() => LeaveRules.EnsureEditableByEmployee(Reg(Guid.NewGuid(), 10, 12), today: D(10)))
+            .Should().Throw<DomainRuleException>().Which.Code.Should().Be(LeaveErrorCodes.LeaveNotModifiable);
     [Fact] public void Editing_past_dated_leave_throws_LEAVE_NOT_MODIFIABLE() =>
         FluentActions.Invoking(() => LeaveRules.EnsureEditableByEmployee(Reg(Guid.NewGuid(), 9, 12), today: D(10)))
             .Should().Throw<DomainRuleException>().Which.Code.Should().Be(LeaveErrorCodes.LeaveNotModifiable);

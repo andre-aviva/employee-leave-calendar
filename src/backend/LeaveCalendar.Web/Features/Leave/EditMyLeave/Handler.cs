@@ -12,7 +12,7 @@ public static class Handler
         var existing = await db.LeaveRegistrations.FirstOrDefaultAsync(r => r.Id == id && r.EmployeeId == user.EmployeeId, ct);
         if (existing is null) return Results.NotFound();
 
-        // 2. Ensure the existing registration is still editable (start date must not be in the past)
+        // 2. Ensure the existing registration is still editable (start date must be in the future)
         LeaveRules.EnsureEditableByEmployee(existing, clock.Today);
 
         // 3. Validate the leave type and new dates
