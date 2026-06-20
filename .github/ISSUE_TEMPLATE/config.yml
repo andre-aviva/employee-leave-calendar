@@ -1,0 +1,2 @@
+# Keep the freeform "Open a blank issue" escape hatch alongside the structured form.
+blank_issues_enabled: true
