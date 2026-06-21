@@ -49,6 +49,30 @@ The whole stack — PostgreSQL, the API, and the frontend — is orchestrated wi
   curl -sSL https://aspire.dev/install.sh | bash
   ```
 
+### First-time setup: dev secrets
+
+The JWT signing key is a secret and is **not** committed to source control, so set it once
+in [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) before the
+first run (loaded automatically in the Development environment):
+
+```bash
+dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 32)" \
+  --project src/backend/LeaveCalendar.Web
+```
+
+That single key is all `aspire run` needs — Aspire provisions PostgreSQL and injects its
+connection string automatically. Only if you run the API **standalone** (outside Aspire,
+against your own local PostgreSQL) do you also need a connection string:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:leavecalendar" \
+  "Host=localhost;Port=5432;Database=leavecalendar;Username=postgres;Password=<your-local-pw>" \
+  --project src/backend/LeaveCalendar.Web
+```
+
+Without the signing key the API fail-fasts at startup (`Jwt:SigningKey must be supplied …`),
+which is the guard that keeps a key from ever shipping empty to production.
+
 ### Run the whole stack
 
 From the repository root:
