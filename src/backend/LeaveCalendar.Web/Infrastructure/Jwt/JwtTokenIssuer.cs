@@ -1,8 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 using LeaveCalendar.Domain.Employees;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LeaveCalendar.Web.Infrastructure.Jwt;
@@ -11,6 +10,7 @@ public sealed class JwtTokenIssuer : IJwtTokenIssuer
 {
     private readonly JwtOptions _options;
     private readonly SigningCredentials _credentials;
+    private readonly JsonWebTokenHandler _handler = new();
 
     public JwtTokenIssuer(IOptions<JwtOptions> options)
     {
@@ -21,21 +21,24 @@ public sealed class JwtTokenIssuer : IJwtTokenIssuer
 
     public string Issue(Employee employee)
     {
-        var claims = new[]
+        // Issue with the same Microsoft.IdentityModel stack the bearer middleware validates
+        // with (JsonWebTokenHandler) — one token stack end to end. Claim names come from
+        // JwtClaimNames so the issuer and the readers cannot drift.
+        var descriptor = new SecurityTokenDescriptor
         {
-            new Claim(JwtRegisteredClaimNames.Sub, employee.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Name, employee.Name),
-            new Claim("role", employee.Role.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, employee.Username),
+            Issuer = _options.Issuer,
+            Audience = _options.Audience,
+            Expires = DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
+            SigningCredentials = _credentials,
+            Claims = new Dictionary<string, object>
+            {
+                [JwtClaimNames.Subject] = employee.Id.ToString(),
+                [JwtClaimNames.Name] = employee.Name,
+                [JwtClaimNames.Role] = employee.Role.ToString(),
+                [JwtClaimNames.Username] = employee.Username,
+            }
         };
 
-        var token = new JwtSecurityToken(
-            issuer: _options.Issuer,
-            audience: _options.Audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
-            signingCredentials: _credentials);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return _handler.CreateToken(descriptor);
     }
 }
