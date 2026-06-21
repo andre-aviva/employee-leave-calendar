@@ -22,7 +22,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("Spa");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" })).AllowAnonymous();
+// Real readiness/liveness checks (/health runs the database check, /alive is liveness-only),
+// replacing the former static /health that always returned 200 even with Postgres down.
+app.MapDefaultEndpoints();
 app.MapEndpoints();
 
 // migrate + seed on startup (skipped under the integration-test environment, which does it in the harness)

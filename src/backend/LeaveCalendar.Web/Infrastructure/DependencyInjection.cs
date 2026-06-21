@@ -46,6 +46,9 @@ public static class DependencyInjection
         services.AddEndpoints(typeof(DependencyInjection).Assembly);
         services.AddProblemDetails();
         services.AddExceptionHandler<DomainExceptionHandler>();
+        // Readiness: /health now fails when the database is unreachable, not just liveness.
+        // Adds to the "self" liveness check registered by ServiceDefaults.AddDefaultHealthChecks().
+        services.AddHealthChecks().AddDbContextCheck<LeaveDbContext>("database");
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddCors(o => o.AddPolicy("Spa", p => p
