@@ -261,6 +261,8 @@ describe('Leave Management (Admin only)', () => {
 
   describe('route guard', () => {
     it('Employee navigating to /admin/leave is redirected', () => {
+      cy.clearAllCookies();
+      cy.clearAllLocalStorage();
       SignInPage.visit();
       SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
       cy.visit('/admin/leave');
