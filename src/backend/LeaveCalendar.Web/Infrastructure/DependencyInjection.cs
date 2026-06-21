@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using FluentValidation;
@@ -18,8 +17,6 @@ public static class DependencyInjection
 {
     public static WebApplicationBuilder AddLeaveCalendar(this WebApplicationBuilder builder)
     {
-        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-
         var services = builder.Services;
         builder.AddNpgsqlDbContext<LeaveDbContext>("leavecalendar");
         services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
@@ -72,8 +69,11 @@ public static class DependencyInjection
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
-                    NameClaimType = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Sub,
-                    RoleClaimType = "role",
+                    // Identity vs display split (see JwtClaimNames): "sub" carries identity and is
+                    // read explicitly via CurrentUser.EmployeeId, while "name" is the display value
+                    // bound to ClaimsIdentity.Name here so the two never diverge.
+                    NameClaimType = JwtClaimNames.Name,
+                    RoleClaimType = JwtClaimNames.Role,
                     // Issuer and validator share one clock; no skew tolerance — expired tokens
                     // are rejected promptly (the framework default is 5 minutes).
                     ClockSkew = TimeSpan.Zero
@@ -100,7 +100,7 @@ public static class DependencyInjection
     private static async Task RevalidateAgainstDatabaseAsync(TokenValidatedContext context)
     {
         var principal = context.Principal;
-        if (!Guid.TryParse(principal?.FindFirstValue(JwtRegisteredClaimNames.Sub), out var employeeId))
+        if (!Guid.TryParse(principal?.FindFirstValue(JwtClaimNames.Subject), out var employeeId))
         {
             context.Fail("Token is missing a valid 'sub' claim.");
             return;
@@ -118,7 +118,7 @@ public static class DependencyInjection
             return;
         }
 
-        if (!string.Equals(principal!.FindFirstValue("role"), current.Role.ToString(), StringComparison.Ordinal))
+        if (!string.Equals(principal!.FindFirstValue(JwtClaimNames.Role), current.Role.ToString(), StringComparison.Ordinal))
             context.Fail("The account role has changed; re-authentication required.");
     }
 }
