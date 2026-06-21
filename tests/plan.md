@@ -187,7 +187,7 @@ The items below appear in the Design System (Page Layouts / Feedback Patterns) b
 | Feature | Design System says | POM status |
 |---|---|---|
 | Calendar Overview — "Request Leave" button | Visible to Employee only, not to Admin | Not in `CalendarPage` |
-| Navigation Bar — Admin role | Sees Calendar + Leave Management only; My Leave link hidden | `checkAdminLinks()` currently shows My Leave as visible |
+| Navigation Bar — Admin role | Sees Calendar + Leave Management only; My Leave link hidden | **Functional spec overrides Design System**: My Leave link has no role restriction per the Nav Bar functional spec. `checkAdminLinks()` correctly shows My Leave as visible for Admin. Design System diverges — pending UX alignment. |
 | My Leave — success feedback | Toast top-right after register/edit, auto-dismisses after 4s | No `SuccessToast` getter in `MyLeavePage` |
 | Leave Management — filter bar | Includes Status filter | No `getStatusFilter()` in `AdminLeavePage` |
 | Leave Management — filter bar | Includes Reset button | No `getResetButton()` / `resetFilters()` in `AdminLeavePage` |
@@ -245,7 +245,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Persona | Scenario |
 |---|---|
 | Employee | Sees Calendar Overview + My Leave; no Leave Management link |
-| Admin | Sees Calendar Overview + Leave Management; no My Leave link |
+| Admin | Sees Calendar Overview + My Leave + Leave Management |
 | Any | Signed-in user's name displayed in the nav bar |
 | Any | Sign out → redirected to /sign-in |
 
@@ -269,6 +269,8 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Register — past start date → START_DATE_IN_PAST error below Start Date field |
 | Employee | Register — end date before start date → END_DATE_ERROR below End Date field |
 | Employee | Register — overlap with existing → OVERLAP form-level error |
+| Employee | Register — 1-day leave (start == end) → succeeds |
+| Employee | Register — leave starting the day an existing registration ends → OVERLAP error (adjacency counts as overlap) |
 | Employee | Register — restricted leave type (Public Holiday) → TYPE_NOT_REGISTERABLE error below Leave Type field |
 | Employee | Register — Cancel closes form without saving |
 | Employee | Edit and delete actions only visible on registrations with a **future** start date — not visible on today-dated or past-dated registrations |
@@ -279,6 +281,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Edit — Cancel closes form without saving |
 | Employee | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Employee | Delete — Confirm → registration deleted, table refreshes |
+| Employee | Dates in the leave table display as DD-MM-YYYY |
 | Admin | Same register/edit/delete flows (Admin also uses My Leave for own leave) |
 
 ### Leave Management (Admin only)
@@ -290,6 +293,8 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Create leave for any employee, any leave type including Public Holiday → table refreshes |
 | Admin | Create — end date before start date → END_DATE_ERROR below End Date field |
 | Admin | Create — overlap → OVERLAP form-level error |
+| Admin | Create — 1-day leave (start == end) → succeeds |
+| Admin | Create — leave starting the day an existing registration ends → OVERLAP error (adjacency counts as overlap) |
 | Admin | Create — Cancel closes form without saving |
 | Admin | Edit leave for any employee — no date restriction → table refreshes |
 | Admin | Edit — Employee field is locked to the original employee |
@@ -317,6 +322,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 - ~~**Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today~~ — fixed in #19.
 - ~~**Admin slices not yet implemented**~~ — resolved in #12; all four admin slices (`ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave`) are implemented and integration-tested.
 - **Frontend not yet implemented** — blocks all E2E tests.
+- **Accessibility (cypress-axe)** — AD-QA-1 specifies cypress-axe as the WCAG 2.2 AA accessibility tool. Not yet installed. Add once the frontend is implemented.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
 - `cypress.config.ts` baseUrl is `http://localhost:3000` (placeholder — update once dev server port is confirmed).
