@@ -192,6 +192,34 @@ public class ListAllLeaveTests(ApiFactory factory) : IntegrationTestBase(factory
     }
 
     [Fact]
+    public async Task ListAllLeave_oversizedPageSize_isClampedToMax100()
+    {
+        await Factory.ResetAsync();
+        await SeedAsync(
+            MakeReg(Guid.NewGuid(), EmployeeId, VacationTypeId,  new DateOnly(2026, 7, 1),  new DateOnly(2026, 7, 5)),
+            MakeReg(Guid.NewGuid(), NoraId,     SickLeaveTypeId, new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 12)));
+
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+        var response = await client.GetAsync("/api/admin/leave?pageSize=1000000");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        // pageSize is clamped to the [1,100] ceiling rather than echoed back as 1000000
+        body.GetProperty("pageSize").GetInt32().Should().Be(100);
+        body.GetProperty("totalCount").GetInt32().Should().Be(2);
+        body.GetProperty("totalPages").GetInt32().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ListAllLeave_transposedRange_returns_400()
+    {
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+        // to < from must be a 400, not a silent empty 200
+        var response = await client.GetAsync("/api/admin/leave?from=2026-07-31&to=2026-07-01");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task ListAllLeave_pageOutOfRange_clampsToLastPage()
     {
         await Factory.ResetAsync();

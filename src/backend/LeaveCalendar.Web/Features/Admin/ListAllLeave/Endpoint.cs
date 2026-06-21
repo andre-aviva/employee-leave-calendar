@@ -7,5 +7,6 @@ public sealed class Endpoint : IEndpoint
     public void Map(IEndpointRouteBuilder app) =>
         app.MapGet("/api/admin/leave", Handler.HandleAsync)
            .RequireAuthorization("Admin")
+           .AddEndpointFilter<ValidationFilter<Request>>()
            .WithTags("Admin");
 }
