@@ -11,7 +11,7 @@ public static class DbSeeder
         {
             db.LeaveTypes.AddRange(
                 new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000001"), Name = "Vacation",       ColourHex = "#2E7D32", RegisterableBy = RegisterableBy.Employee },
-                new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000002"), Name = "Sick Leave",     ColourHex = "#C62828", RegisterableBy = RegisterableBy.Employee },
+                new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000002"), Name = "Sick Leave",     ColourHex = "#C62828", RegisterableBy = RegisterableBy.Employee, IsSensitive = true },
                 new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000003"), Name = "Public Holiday", ColourHex = "#1565C0", RegisterableBy = RegisterableBy.Admin },
                 new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000004"), Name = "Other",          ColourHex = "#6A1B9A", RegisterableBy = RegisterableBy.Employee });
         }
