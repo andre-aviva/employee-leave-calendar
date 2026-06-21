@@ -39,6 +39,10 @@ class AdminLeavePage {
     return cy.get(element('AdminLeave_ErrorState'));
   }
 
+  static getRetryButton() {
+    return cy.get(element('AdminLeave_RetryButton'));
+  }
+
   static getEmployeeFilter() {
     return cy.get(element('AdminLeave_EmployeeFilter'));
   }
