@@ -3,6 +3,8 @@ using LeaveCalendar.Domain.Leave;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 namespace LeaveCalendar.Web.Common;
 public sealed class DomainExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
 {
@@ -53,6 +55,19 @@ public sealed class DomainExceptionHandler(IProblemDetailsService problemDetails
                     Type = "https://datatracker.ietf.org/doc/html/rfc9457"
                 };
                 problem.Extensions["code"] = de.Code;
+                break;
+            // The leave_registrations exclusion constraint rejects overlapping rows at the
+            // database with SQLSTATE 23P01 (exclusion_violation). Translate it to the same
+            // 422 OVERLAP body the in-memory pre-check produces, so a race that slips past
+            // the application check still surfaces the existing client contract, not a 500.
+            case DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation } }:
+                problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status422UnprocessableEntity,
+                    Title = "Business rule violation",
+                    Type = "https://datatracker.ietf.org/doc/html/rfc9457"
+                };
+                problem.Extensions["code"] = LeaveErrorCodes.Overlap;
                 break;
             default:
                 return false; // let the framework produce a 500

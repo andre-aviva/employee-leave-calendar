@@ -19,9 +19,10 @@ public static class Handler
         // Domain invariants (admin: no date/type-eligibility restriction)
         LeaveRules.EnsureEndOnOrAfterStart(request.StartDate, request.EndDate);
 
-        // Overlap check against the registration's employee's other leave (excluding self)
+        // Overlap check against the employee's date-overlapping leave only (excluding self via excludingId)
         var employeeRegs = await db.LeaveRegistrations
-            .Where(r => r.EmployeeId == registration.EmployeeId)
+            .Where(r => r.EmployeeId == registration.EmployeeId
+                && r.StartDate <= request.EndDate && request.StartDate <= r.EndDate)
             .ToListAsync(ct);
         LeaveRules.EnsureNoOverlap(new LeavePeriod(request.StartDate, request.EndDate), employeeRegs, excludingId: id);
 
