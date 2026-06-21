@@ -5,7 +5,7 @@ import ConfirmationDialog from '../../support/pages/ConfirmationDialog';
 import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY } from '../../support/testdata/leaveTypes';
 import { TEXTS } from '../../support/constants';
-import { apiSignIn, apiCreateMyLeave, apiCleanupMyLeave } from '../../support/helpers/api';
+import { apiSignIn, apiAdminCreateLeave, apiCleanupAdminLeave, apiCreateMyLeave, apiCleanupMyLeave } from '../../support/helpers/api';
 import { isoDate, displayDate } from '../../support/helpers/dates';
 
 describe('My Leave', () => {
@@ -146,20 +146,24 @@ describe('My Leave', () => {
   // ── Edit and delete visibility ───────────────────────────────────────────────
 
   describe('edit and delete visibility', () => {
+    let adminToken: string;
+
+    beforeEach(() => {
+      apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then(
+        (t) => { adminToken = t; },
+      );
+    });
+
+    afterEach(() => {
+      if (adminToken) apiCleanupAdminLeave(adminToken);
+    });
+
     it('buttons NOT visible on today-dated or past-dated registrations', () => {
-      // Use admin API to seed a past-dated registration (employees cannot register past dates)
-      apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then((adminToken) => {
-        cy.request({
-          method: 'POST',
-          url: '/api/admin/leave',
-          headers: { Authorization: `Bearer ${adminToken}` },
-          body: {
-            employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
-            leaveTypeId: LEAVE_TYPE_VACATION.id,
-            startDate: isoDate(-7),
-            endDate: isoDate(-5),
-          },
-        });
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(-7),
+        endDate: isoDate(-5),
       });
       MyLeavePage.visit();
       MyLeavePage.checkEditButtonNotExist(0);
