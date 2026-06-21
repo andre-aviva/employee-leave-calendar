@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 namespace LeaveCalendar.Web.Infrastructure;
 
@@ -48,7 +49,35 @@ public static class DependencyInjection
         // Adds to the "self" liveness check registered by ServiceDefaults.AddDefaultHealthChecks().
         services.AddHealthChecks().AddDbContextCheck<LeaveDbContext>("database");
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            // Vertical slices reuse short type names (Request/Response) across feature folders,
+            // which collide under Swashbuckle's default short-name schemaId and 500 the whole
+            // document. Qualify each schema with its slice — the namespace segment after
+            // "…Features." — e.g. "AdminEditLeaveRequest". Slice folder names are unique.
+            options.CustomSchemaIds(type =>
+            {
+                var slice = type.Namespace?.Split('.').LastOrDefault();
+                return slice is null ? type.Name : slice + type.Name;
+            });
+
+            // Almost every endpoint is RequireAuthorization, so expose a Bearer scheme plus a
+            // global requirement: this gives the Swagger UI an "Authorize" button and lets it
+            // attach a pasted JWT (from POST /api/auth/sign-in) to protected calls.
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Paste a JWT from POST /api/auth/sign-in (without the \"Bearer \" prefix)."
+            });
+            options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+            {
+                { new OpenApiSecuritySchemeReference("Bearer", doc), new List<string>() }
+            });
+        });
         services.AddCors(o => o.AddPolicy("Spa", p => p
             .WithOrigins(builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [])
             .AllowAnyHeader().AllowAnyMethod()));
