@@ -58,6 +58,28 @@ public class ViewCalendarTests(ApiFactory factory) : IntegrationTestBase(factory
     }
 
     [Fact]
+    public async Task ViewCalendar_missingFrom_returns_400()
+    {
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // 'from' omitted would otherwise bind to default(DateOnly) and return all history
+        var response = await client.GetAsync("/api/calendar?to=2026-07-31");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ViewCalendar_windowExceedingTwelveMonths_returns_400()
+    {
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // 17-month span exceeds the 12-month cap
+        var response = await client.GetAsync("/api/calendar?from=2026-01-01&to=2027-06-01");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task ViewCalendar_returnsOnlyRegistrationsIntersectingWindow()
     {
         await Factory.ResetAsync();
