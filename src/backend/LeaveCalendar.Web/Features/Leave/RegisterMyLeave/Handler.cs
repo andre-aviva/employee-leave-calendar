@@ -15,7 +15,13 @@ public static class Handler
         LeaveRules.EnsureTypeRegisterableBy(type, user.Role);
         LeaveRules.EnsureStartTodayOrFuture(request.StartDate, clock.Today);
 
-        var existing = await db.LeaveRegistrations.Where(r => r.EmployeeId == user.EmployeeId).ToListAsync(ct);
+        // Narrow to date-overlapping rows only (composite index, no full-history load);
+        // the domain rule below remains the source of truth and the DB exclusion
+        // constraint is the concurrency-safe backstop.
+        var existing = await db.LeaveRegistrations
+            .Where(r => r.EmployeeId == user.EmployeeId
+                && r.StartDate <= request.EndDate && request.StartDate <= r.EndDate)
+            .ToListAsync(ct);
         LeaveRules.EnsureNoOverlap(new LeavePeriod(request.StartDate, request.EndDate), existing);
 
         var reg = new LeaveRegistration

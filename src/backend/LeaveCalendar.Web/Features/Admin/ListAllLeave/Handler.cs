@@ -5,18 +5,20 @@ namespace LeaveCalendar.Web.Features.Admin.ListAllLeave;
 
 public static class Handler
 {
+    private const int DefaultPageSize = 20;
+    private const int MaxPageSize = 100;
+
     public static async Task<IResult> HandleAsync(
-        Guid? employeeId,
-        Guid[]? leaveTypeId,
-        DateOnly? from,
-        DateOnly? to,
-        int? page,
-        int? pageSize,
+        [AsParameters] Request request,
         LeaveDbContext db,
         CancellationToken ct)
     {
-        var actualPage = (page is null or < 1) ? 1 : page.Value;
-        var actualPageSize = (pageSize is null or < 1) ? 20 : pageSize.Value;
+        var actualPage = (request.Page is null or < 1) ? 1 : request.Page.Value;
+        // Clamp pageSize to [1, 100] so an oversized value can't materialize and
+        // serialize the entire result set (memory/DB exhaustion).
+        var actualPageSize = (request.PageSize is null or < 1)
+            ? DefaultPageSize
+            : Math.Min(request.PageSize.Value, MaxPageSize);
 
         var query =
             from r in db.LeaveRegistrations
@@ -24,16 +26,16 @@ public static class Handler
             join t in db.LeaveTypes on r.LeaveTypeId equals t.Id
             select new { r, e, t };
 
-        if (employeeId is { } empId)
+        if (request.EmployeeId is { } empId)
             query = query.Where(x => x.r.EmployeeId == empId);
 
-        if (leaveTypeId is { Length: > 0 })
-            query = query.Where(x => leaveTypeId.Contains(x.r.LeaveTypeId));
+        if (request.LeaveTypeId is { Length: > 0 } leaveTypeIds)
+            query = query.Where(x => leaveTypeIds.Contains(x.r.LeaveTypeId));
 
-        if (from is { } fromDate)
+        if (request.From is { } fromDate)
             query = query.Where(x => x.r.EndDate >= fromDate);
 
-        if (to is { } toDate)
+        if (request.To is { } toDate)
             query = query.Where(x => x.r.StartDate <= toDate);
 
         var totalCount = await query.CountAsync(ct);

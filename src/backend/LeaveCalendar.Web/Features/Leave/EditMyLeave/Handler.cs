@@ -23,8 +23,12 @@ public static class Handler
         LeaveRules.EnsureTypeRegisterableBy(type, user.Role);
         LeaveRules.EnsureStartTodayOrFuture(request.StartDate, clock.Today);
 
-        // 4. Ensure no overlap with caller's other registrations (excluding this one to allow edit-in-place)
-        var callersRegs = await db.LeaveRegistrations.Where(r => r.EmployeeId == user.EmployeeId).ToListAsync(ct);
+        // 4. Ensure no overlap with caller's other registrations (excluding this one to allow edit-in-place).
+        //    Narrow to date-overlapping rows only; the excludingId guard still removes self.
+        var callersRegs = await db.LeaveRegistrations
+            .Where(r => r.EmployeeId == user.EmployeeId
+                && r.StartDate <= request.EndDate && request.StartDate <= r.EndDate)
+            .ToListAsync(ct);
         LeaveRules.EnsureNoOverlap(new LeavePeriod(request.StartDate, request.EndDate), callersRegs, excludingId: id);
 
         // 5. Mutate and persist

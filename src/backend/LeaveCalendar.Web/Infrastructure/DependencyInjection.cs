@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using FluentValidation;
 using LeaveCalendar.Web.Common;
@@ -46,6 +47,9 @@ public static class DependencyInjection
         services.AddEndpoints(typeof(DependencyInjection).Assembly);
         services.AddProblemDetails();
         services.AddExceptionHandler<DomainExceptionHandler>();
+        // Readiness: /health now fails when the database is unreachable, not just liveness.
+        // Adds to the "self" liveness check registered by ServiceDefaults.AddDefaultHealthChecks().
+        services.AddHealthChecks().AddDbContextCheck<LeaveDbContext>("database");
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddCors(o => o.AddPolicy("Spa", p => p
@@ -69,7 +73,17 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
                     NameClaimType = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Sub,
-                    RoleClaimType = "role"
+                    RoleClaimType = "role",
+                    // Issuer and validator share one clock; no skew tolerance — expired tokens
+                    // are rejected promptly (the framework default is 5 minutes).
+                    ClockSkew = TimeSpan.Zero
+                };
+                // Re-validate the token's subject against the database on every request so a
+                // deleted or role-changed account loses access immediately, rather than staying
+                // valid until the token expires.
+                bearerOptions.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = RevalidateAgainstDatabaseAsync
                 };
             });
         services.AddAuthorizationBuilder()
@@ -77,5 +91,34 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUser>();
 
         return builder;
+    }
+
+    // Authorization identity and role come from the JWT, but an issued token stays valid
+    // until expiry. Re-check the subject against the current Employee record on every request
+    // so a deleted account (row gone) or a role change (claim no longer matches the DB) takes
+    // effect immediately. Any failure calls context.Fail(), yielding 401.
+    private static async Task RevalidateAgainstDatabaseAsync(TokenValidatedContext context)
+    {
+        var principal = context.Principal;
+        if (!Guid.TryParse(principal?.FindFirstValue(JwtRegisteredClaimNames.Sub), out var employeeId))
+        {
+            context.Fail("Token is missing a valid 'sub' claim.");
+            return;
+        }
+
+        var db = context.HttpContext.RequestServices.GetRequiredService<LeaveDbContext>();
+        var current = await db.Employees
+            .Where(e => e.Id == employeeId)
+            .Select(e => new { e.Role })
+            .FirstOrDefaultAsync(context.HttpContext.RequestAborted);
+
+        if (current is null)
+        {
+            context.Fail("The account no longer exists.");
+            return;
+        }
+
+        if (!string.Equals(principal!.FindFirstValue("role"), current.Role.ToString(), StringComparison.Ordinal))
+            context.Fail("The account role has changed; re-authentication required.");
     }
 }

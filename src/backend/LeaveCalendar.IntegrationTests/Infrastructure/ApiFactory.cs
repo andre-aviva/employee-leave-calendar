@@ -68,7 +68,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         using var scope = Services.CreateScope();
         var ctx = scope.ServiceProvider.GetRequiredService<LeaveDbContext>();
         await ctx.Database.MigrateAsync();
-        await DbSeeder.SeedAsync(ctx, scope.ServiceProvider.GetRequiredService<IPasswordHasher>());
+        // The integration suite authenticates as the demo users, so seed them explicitly.
+        await DbSeeder.SeedAsync(ctx, scope.ServiceProvider.GetRequiredService<IPasswordHasher>(), includeDemoUsers: true);
     }
 
     public async Task ResetAsync()

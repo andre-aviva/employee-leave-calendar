@@ -129,6 +129,20 @@ public class AdminEditLeaveTests(ApiFactory factory) : IntegrationTestBase(facto
     }
 
     [Fact]
+    public async Task AdminEditLeave_endDateBeforeStartDate_returns_400()
+    {
+        // Date ordering is a 400 client error on every mutating path (see issue #26).
+        await Factory.ResetAsync();
+        var regId = await SeedRegistrationAsync(EmployeeId, new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 5));
+
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+        var response = await client.PutAsJsonAsync($"/api/admin/leave/{regId}",
+            new EditRequest(VacationTypeId, "2026-07-10", "2026-07-01")); // deliberately swapped
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task AdminEditLeave_overlapWithOtherLeave_returns_422_OVERLAP()
     {
         await Factory.ResetAsync();

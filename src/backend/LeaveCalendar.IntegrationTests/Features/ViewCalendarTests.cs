@@ -22,7 +22,9 @@ public class ViewCalendarTests(ApiFactory factory) : IntegrationTestBase(factory
 
     // Seeded GUIDs from DbSeeder
     private static readonly Guid EmployeeId = Guid.Parse("22222222-0000-0000-0000-000000000002"); // Eddie Employee
+    private static readonly Guid NoraId = Guid.Parse("22222222-0000-0000-0000-000000000003");      // Nora Newbie
     private static readonly Guid VacationTypeId = Guid.Parse("11111111-0000-0000-0000-000000000001");
+    private static readonly Guid SickLeaveTypeId = Guid.Parse("11111111-0000-0000-0000-000000000002"); // IsSensitive
 
     private async Task SeedRegistrationAsync(Guid id, Guid employeeId, Guid leaveTypeId, DateOnly start, DateOnly end)
     {
@@ -40,6 +42,76 @@ public class ViewCalendarTests(ApiFactory factory) : IntegrationTestBase(factory
     }
 
     [Fact]
+    public async Task ViewCalendar_nonOwnerNonAdmin_sensitiveType_isRedacted()
+    {
+        await Factory.ResetAsync();
+        var sickId = Guid.NewGuid();
+        // Nora's Sick Leave (a sensitive type) within the window
+        await SeedRegistrationAsync(sickId, NoraId, SickLeaveTypeId,
+            new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 15));
+
+        // Caller is Eddie — neither admin nor the owner
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+        var response = await client.GetAsync("/api/calendar?from=2026-07-01&to=2026-07-31");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<List<CalendarEntryDto>>();
+        body!.Should().HaveCount(1);
+
+        var entry = body[0];
+        entry.Id.Should().Be(sickId);
+        entry.EmployeeName.Should().Be("Nora Newbie");      // who & when stay visible
+        entry.StartDate.Should().Be("2026-07-10");
+        entry.EndDate.Should().Be("2026-07-15");
+        entry.LeaveTypeName.Should().Be("Unavailable");     // the sensitive type is redacted
+        entry.LeaveTypeId.Should().Be(Guid.Empty);
+        entry.ColourHex.Should().Be("#9E9E9E");
+    }
+
+    [Fact]
+    public async Task ViewCalendar_owner_seesOwnSensitiveType_inFull()
+    {
+        await Factory.ResetAsync();
+        var sickId = Guid.NewGuid();
+        // Eddie's own Sick Leave
+        await SeedRegistrationAsync(sickId, EmployeeId, SickLeaveTypeId,
+            new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 15));
+
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+        var response = await client.GetAsync("/api/calendar?from=2026-07-01&to=2026-07-31");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<List<CalendarEntryDto>>();
+        body!.Should().HaveCount(1);
+
+        var entry = body[0];
+        entry.LeaveTypeName.Should().Be("Sick Leave");      // owner sees the real type
+        entry.LeaveTypeId.Should().Be(SickLeaveTypeId);
+        entry.ColourHex.Should().Be("#C62828");
+    }
+
+    [Fact]
+    public async Task ViewCalendar_admin_seesSensitiveType_inFull()
+    {
+        await Factory.ResetAsync();
+        var sickId = Guid.NewGuid();
+        await SeedRegistrationAsync(sickId, NoraId, SickLeaveTypeId,
+            new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 15));
+
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+        var response = await client.GetAsync("/api/calendar?from=2026-07-01&to=2026-07-31");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<List<CalendarEntryDto>>();
+        body!.Should().HaveCount(1);
+
+        var entry = body[0];
+        entry.LeaveTypeName.Should().Be("Sick Leave");      // admin sees all detail
+        entry.LeaveTypeId.Should().Be(SickLeaveTypeId);
+        entry.ColourHex.Should().Be("#C62828");
+    }
+
+    [Fact]
     public async Task ViewCalendar_anonymous_returns_401()
     {
         var response = await Client.GetAsync("/api/calendar?from=2026-07-01&to=2026-07-31");
@@ -53,6 +125,28 @@ public class ViewCalendarTests(ApiFactory factory) : IntegrationTestBase(factory
         var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
 
         var response = await client.GetAsync("/api/calendar?from=2026-07-31&to=2026-07-01");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ViewCalendar_missingFrom_returns_400()
+    {
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // 'from' omitted would otherwise bind to default(DateOnly) and return all history
+        var response = await client.GetAsync("/api/calendar?to=2026-07-31");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ViewCalendar_windowExceedingTwelveMonths_returns_400()
+    {
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        // 17-month span exceeds the 12-month cap
+        var response = await client.GetAsync("/api/calendar?from=2026-01-01&to=2027-06-01");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

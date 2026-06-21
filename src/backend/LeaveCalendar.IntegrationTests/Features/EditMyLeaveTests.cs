@@ -166,6 +166,22 @@ public class EditMyLeaveTests(ApiFactory factory) : IntegrationTestBase(factory)
     }
 
     [Fact]
+    public async Task EditMyLeave_endDateBeforeStartDate_returns_400()
+    {
+        // Date ordering is a 400 client error on every mutating path (see issue #26).
+        await Factory.ResetAsync();
+        var regId = Guid.NewGuid();
+        await SeedRegistrationAsync(regId, EmployeeId, new DateOnly(2026, 6, 20), new DateOnly(2026, 6, 25));
+
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        var response = await client.PutAsJsonAsync($"/api/me/leave/{regId}",
+            new EditRequest(VacationTypeId, "2026-06-25", "2026-06-20")); // deliberately swapped
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task EditMyLeave_anotherEmployees_registration_returns_404()
     {
         await Factory.ResetAsync();
