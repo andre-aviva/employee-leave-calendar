@@ -1,0 +1,83 @@
+name: Task / Finding
+description: A single, self-contained unit of work — a bug, hardening item, or improvement.
+title: "[Priority] <concise summary>"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **One issue = one shippable unit.** Fill in each section so a human — or Claude — can pick this up cold and implement it without further context. Keep the scope to a single PR.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong, or what needs doing, in plain language.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Why it matters — the risk, who/what is affected, and how severe.
+    validations:
+      required: false
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: The relevant files and line numbers, so the work can start immediately.
+      placeholder: |
+        - `src/backend/.../Handler.cs:18-32` — ...
+        - `src/frontend/.../Component.tsx:5` — ...
+    validations:
+      required: false
+  - type: textarea
+    id: approach
+    attributes:
+      label: Suggested approach
+      description: Implementation guidance for whoever (or whatever) picks this up. Note alternatives and trade-offs if relevant.
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: A checklist that defines "done". Include tests.
+      value: |
+        - [ ]
+        - [ ] Tests added/updated and passing
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Also apply the matching `priority:*` label.
+      options:
+        - high
+        - medium
+        - low
+      default: 1
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Also apply the matching `area:*` label(s).
+      multiple: true
+      options:
+        - api
+        - auth
+        - persistence
+        - infra
+        - frontend
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / references
+      description: Links to specs, plans, related issues, or where this was surfaced.
+    validations:
+      required: false
