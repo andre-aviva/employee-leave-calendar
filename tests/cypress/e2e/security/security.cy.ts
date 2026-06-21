@@ -6,6 +6,17 @@ import { apiSignIn, apiCreateMyLeave, apiDeleteMyLeave } from '../../support/hel
 import { isoDate } from '../../support/helpers/dates';
 
 describe('Security (E2E smoke)', () => {
+  let noraToken: string | undefined;
+  let noraLeaveId: string | undefined;
+
+  afterEach(() => {
+    if (noraToken && noraLeaveId) {
+      apiDeleteMyLeave(noraToken, noraLeaveId);
+      noraToken = undefined;
+      noraLeaveId = undefined;
+    }
+  });
+
   it('unauthenticated user — all protected routes redirect to /sign-in', () => {
     ['/calendar', '/my-leave', '/admin/leave'].forEach((route) => {
       cy.visit(route);
@@ -21,9 +32,6 @@ describe('Security (E2E smoke)', () => {
   });
 
   it("Employee cannot see another employee's leave registrations on My Leave page", () => {
-    let noraToken: string;
-    let noraLeaveId: string;
-
     apiSignIn(EMPLOYEE_NORA_NEWBIE.username, EMPLOYEE_NORA_NEWBIE.password).then((t) => {
       noraToken = t;
       apiCreateMyLeave(noraToken, {
@@ -37,8 +45,5 @@ describe('Security (E2E smoke)', () => {
     SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
     MyLeavePage.visit();
     MyLeavePage.checkEmptyState();
-
-    // clean up Nora's leave
-    cy.then(() => apiDeleteMyLeave(noraToken, noraLeaveId));
   });
 });
