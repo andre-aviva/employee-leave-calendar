@@ -33,7 +33,12 @@ if (!app.Environment.IsEnvironment("IntegrationTest"))
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LeaveDbContext>();
     await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher>());
+    // Demo users (incl. the well-known admin) are seeded only in Development; production
+    // must provision its initial admin out of band (see DbSeeder / README).
+    await DbSeeder.SeedAsync(
+        db,
+        scope.ServiceProvider.GetRequiredService<IPasswordHasher>(),
+        includeDemoUsers: app.Environment.IsDevelopment());
 }
 
 app.Run();

@@ -87,6 +87,10 @@ The Vite dev server proxies `/api/*` to the backend, so requests are same-origin
 - **Port already in use** — stop any standalone PostgreSQL or a previous `aspire run` still holding the ports.
 - **`aspire run` hangs at "Starting dashboard…"** — your Aspire CLI is older than the AppHost packages (13.4.5). Update it: `aspire update --self` (interactive) or re-run the install script. (New installs from the script already get a matching version.)
 
+## Production admin provisioning
+
+Demo users — including the well-known `admin` / `Admin!123` account — are seeded **only in Development** and in the integration-test harness (`DbSeeder.SeedAsync(…, includeDemoUsers: true)`). A non-Development startup seeds reference data (leave types) but **no users**, so a fresh production deployment never ships a default admin. Provision the initial production admin out of band — for example an idempotent ops step that inserts a single admin from a secret-managed password (hashed via the app's `IPasswordHasher`) and forces a password change on first login. (Production additionally fail-fasts at startup unless `Jwt:SigningKey` is configured.)
+
 ## Conventions
 
 Wire-format dates are ISO YYYY-MM-DD; the UI displays DD-MM-YYYY. "Today" is computed in Europe/Amsterdam. Business-rule violations return RFC 9457 ProblemDetails with stable 422 codes (OVERLAP, TYPE_NOT_REGISTERABLE, START_DATE_IN_PAST). See each subfolder README for area-specific conventions.

@@ -5,7 +5,13 @@ using Microsoft.EntityFrameworkCore;
 namespace LeaveCalendar.Web.Infrastructure.Persistence;
 public static class DbSeeder
 {
-    public static async Task SeedAsync(LeaveDbContext db, IPasswordHasher hasher, CancellationToken ct = default)
+    // Reference data (LeaveTypes) is seeded in every environment. Demo users — including the
+    // well-known "admin" / "Admin!123" account — are seeded ONLY when includeDemoUsers is true,
+    // i.e. Development and the integration-test harness. A production deployment must never ship
+    // the demo admin; provision the initial admin out of band (see README → "Production admin
+    // provisioning"), e.g. an idempotent ops step that creates it from a secret with a forced
+    // password change on first login.
+    public static async Task SeedAsync(LeaveDbContext db, IPasswordHasher hasher, bool includeDemoUsers, CancellationToken ct = default)
     {
         if (!await db.LeaveTypes.AnyAsync(ct))
         {
@@ -15,7 +21,7 @@ public static class DbSeeder
                 new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000003"), Name = "Public Holiday", ColourHex = "#1565C0", RegisterableBy = RegisterableBy.Admin },
                 new LeaveType { Id = Guid.Parse("11111111-0000-0000-0000-000000000004"), Name = "Other",          ColourHex = "#6A1B9A", RegisterableBy = RegisterableBy.Employee });
         }
-        if (!await db.Employees.AnyAsync(ct))
+        if (includeDemoUsers && !await db.Employees.AnyAsync(ct))
         {
             db.Employees.AddRange(
                 new Employee { Id = Guid.Parse("22222222-0000-0000-0000-000000000001"), Name = "Alice Admin",    Username = "admin",    Role = Role.Admin,    PasswordHash = hasher.Hash("Admin!123") },
