@@ -1,6 +1,7 @@
 import type { TestEmployee } from '../types';
 
 export const EMPLOYEE_ALICE_ADMIN: TestEmployee = {
+  id: '22222222-0000-0000-0000-000000000001',
   username: 'admin',
   password: 'Admin!123',
   name: 'Alice Admin',
@@ -8,6 +9,7 @@ export const EMPLOYEE_ALICE_ADMIN: TestEmployee = {
 };
 
 export const EMPLOYEE_EDDIE_EMPLOYEE: TestEmployee = {
+  id: '22222222-0000-0000-0000-000000000002',
   username: 'employee',
   password: 'Employee!123',
   name: 'Eddie Employee',
@@ -15,6 +17,7 @@ export const EMPLOYEE_EDDIE_EMPLOYEE: TestEmployee = {
 };
 
 export const EMPLOYEE_NORA_NEWBIE: TestEmployee = {
+  id: '22222222-0000-0000-0000-000000000003',
   username: 'nora',
   password: 'Employee!123',
   name: 'Nora Newbie',

@@ -1,6 +1,7 @@
 export type EmployeeRole = 'Employee' | 'Admin';
 
 export interface TestEmployee {
+  id: string;
   username: string;
   password: string;
   name: string;
@@ -8,6 +9,7 @@ export interface TestEmployee {
 }
 
 export interface TestLeaveType {
+  id: string;
   name: string;
   registerableBy: EmployeeRole[];
 }
