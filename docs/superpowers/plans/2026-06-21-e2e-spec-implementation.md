@@ -18,106 +18,39 @@
 - `failOnStatusCode: false` on all cleanup `cy.request` calls — a 404 (already deleted) is silently ignored
 - `baseUrl` in `cypress.config.ts` is `http://localhost:3000` — update once Aspire confirms the Vite dev server port
 - All dates computed with `isoDate(offsetDays)` from `helpers/dates.ts` — never hardcode `YYYY-MM-DD` strings in specs
-- Conventional Commits and GitHub Flow apply to every task
+- **Each task is one GitHub-Flow PR**: branch off up-to-date `main` → atomic commit(s) → push → open PR → squash-merge before starting the next task
 - **API date wire format is `YYYY-MM-DD`** (ISO) — `isoDate()` returns this format; `displayDate()` converts to DD-MM-YYYY for UI assertions
 
 ---
 
-### Task 1: Update tests/plan.md with discovered scenario gaps
+### Task 1: Update tests/plan.md with discovered scenario gaps ✅ Done — PR #38
 
-**Files:**
-- Modify: `tests/plan.md`
-
-Three issues discovered by cross-checking against the Confluence functional requirements and arc42 §10 quality tree:
-
-1. **Navigation Bar — Admin scenario is wrong.** The Navigation Bar functional spec (Confluence) lists the My Leave link with **no role restriction**; only the Leave Management link is Admin-only. Admin users see: Calendar + My Leave + Leave Management. The current scenario "no My Leave link for Admin" follows the Design System, not the functional spec. The POM (`checkAdminLinks()`) is already correct.
-
-2. **Three missing scenarios** called out as Critical/High in arc42 §10 quality tree:
-   - 1-day leave `start == end` → must be accepted (Q1, Critical)
-   - Adjacent period `end of A == start of B` → must be rejected as `OVERLAP` (Q1, Critical)
-   - Dates display as `DD-MM-YYYY` in the UI (Q2, High)
-
-3. **cypress-axe** is specified in AD-QA-1 as the accessibility tool — add as a known blocker note.
-
-- [ ] **Step 1: Fix Nav Bar Admin scenario in the scenarios table**
-
-  Change the Admin row in the "Navigation Bar" section from:
-  ```
-  | Admin | Sees Calendar Overview + Leave Management; no My Leave link |
-  ```
-  to:
-  ```
-  | Admin | Sees Calendar Overview + My Leave + Leave Management |
-  ```
-
-- [ ] **Step 2: Update the Design System additions table for Nav Bar**
-
-  The Navigation Bar row currently says `checkAdminLinks() currently shows My Leave as visible`. Update the note to clarify that **the functional spec confirms My Leave is visible to Admin** — the POM is correct; it is the Design System that diverges:
-
-  Change:
-  ```
-  | Navigation Bar — Admin role | Sees Calendar + Leave Management only; My Leave link hidden | `checkAdminLinks()` currently shows My Leave as visible |
-  ```
-  to:
-  ```
-  | Navigation Bar — Admin role | Sees Calendar + Leave Management only; My Leave link hidden | **Functional spec overrides Design System**: My Leave link has no role restriction per the Nav Bar spec page. `checkAdminLinks()` correctly shows My Leave as visible. Design System diverges — pending UX alignment. |
-  ```
-
-- [ ] **Step 3: Add 1-day leave scenario to My Leave**
-
-  After the "Register — overlap with existing → OVERLAP form-level error" row, insert:
-  ```
-  | Employee | Register — 1-day leave (start == end) → succeeds |
-  ```
-
-- [ ] **Step 4: Add adjacent overlap scenario to My Leave**
-
-  After the 1-day leave row, insert:
-  ```
-  | Employee | Register — leave starting the day an existing registration ends → OVERLAP error (adjacency counts as overlap) |
-  ```
-
-- [ ] **Step 5: Add DD-MM-YYYY format scenario to My Leave**
-
-  At the end of the My Leave table, add:
-  ```
-  | Employee | Dates in the leave table display as DD-MM-YYYY |
-  ```
-
-- [ ] **Step 6: Add 1-day and adjacent overlap scenarios to Leave Management**
-
-  After "Create — overlap → OVERLAP form-level error" in the Leave Management table, insert:
-  ```
-  | Admin | Create — 1-day leave (start == end) → succeeds |
-  | Admin | Create — leave starting the day an existing registration ends → OVERLAP error |
-  ```
-
-- [ ] **Step 7: Add cypress-axe to Known Issues / Blockers**
-
-  Add a new bullet:
-  ```
-  - **Accessibility (cypress-axe)** — AD-QA-1 specifies cypress-axe as the WCAG 2.2 AA accessibility tool. Not yet installed. Add once the frontend is implemented.
-  ```
-
-- [ ] **Step 8: Commit**
-
-  ```bash
-  git add tests/plan.md
-  git commit -m "docs(plan): fix nav bar admin scenario and add missing edge-case E2E scenarios"
-  ```
+Merged. `tests/plan.md` now contains the correct Nav Bar Admin scenario and all missing edge-case scenarios (1-day leave, adjacent overlap, DD-MM-YYYY format).
 
 ---
 
-### Task 2: Add seeded GUIDs to TestEmployee and TestLeaveType
+### Task 2: Types, date helper, and API helper (shared infrastructure)
+
+**Branch:** `test/e2e-types-and-helpers`
 
 **Files:**
 - Modify: `tests/cypress/support/types/index.ts`
 - Modify: `tests/cypress/support/testdata/employees.ts`
 - Modify: `tests/cypress/support/testdata/leaveTypes.ts`
+- Create: `tests/cypress/support/helpers/dates.ts`
+- Create: `tests/cypress/support/helpers/api.ts`
 
-The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Persistence/DbSeeder.cs`. Specs need them for `cy.request` API calls (`RegisterMyLeave.Request.LeaveTypeId`, `AdminCreateLeave.Request.EmployeeId`, etc.).
+Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, and API seeding helper are all shared infrastructure with no user-facing behaviour — splitting them creates a state where the helper exists but nothing uses it.
 
-- [ ] **Step 1: Add `id: string` to both interfaces in `types/index.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-types-and-helpers
+  ```
+
+- [ ] **Step 2: Add `id: string` to both interfaces in `types/index.ts`**
 
   ```typescript
   export type EmployeeRole = 'Employee' | 'Admin';
@@ -145,7 +78,9 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   }
   ```
 
-- [ ] **Step 2: Populate IDs in `testdata/leaveTypes.ts`**
+- [ ] **Step 3: Populate IDs in `testdata/leaveTypes.ts`**
+
+  GUIDs from `src/backend/LeaveCalendar.Web/Infrastructure/Persistence/DbSeeder.cs`.
 
   ```typescript
   import type { TestLeaveType } from '../types';
@@ -186,7 +121,7 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   );
   ```
 
-- [ ] **Step 3: Populate IDs in `testdata/employees.ts`**
+- [ ] **Step 4: Populate IDs in `testdata/employees.ts`**
 
   ```typescript
   import type { TestEmployee } from '../types';
@@ -225,15 +160,7 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   export const STANDARD_EMPLOYEES = ALL_EMPLOYEES.filter((e) => e.role === 'Employee');
   ```
 
-- [ ] **Step 4: Run typecheck**
-
-  ```bash
-  cd tests && pnpm typecheck
-  ```
-
-  Expected: no errors.
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Commit the type and testdata changes**
 
   ```bash
   git add tests/cypress/support/types/index.ts \
@@ -242,15 +169,7 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   git commit -m "test(types): add seeded GUIDs to TestEmployee and TestLeaveType"
   ```
 
----
-
-### Task 3: Add date and API helpers
-
-**Files:**
-- Create: `tests/cypress/support/helpers/dates.ts`
-- Create: `tests/cypress/support/helpers/api.ts`
-
-- [ ] **Step 1: Create `helpers/dates.ts`**
+- [ ] **Step 6: Create `helpers/dates.ts`**
 
   ```typescript
   export function isoDate(offsetDays = 0): string {
@@ -265,9 +184,9 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   }
   ```
 
-- [ ] **Step 2: Create `helpers/api.ts`**
+- [ ] **Step 7: Create `helpers/api.ts`**
 
-  `GET /api/admin/leave` returns a `PagedResult<AdminLeaveDto>` envelope `{ items: [...], page, pageSize, totalCount, totalPages }`. `GET /api/me/leave` returns a plain array. Both details are reflected in the helpers below.
+  `GET /api/admin/leave` returns a `PagedResult` envelope `{ items: [...] }`. `GET /api/me/leave` returns a plain array. Both are reflected below.
 
   ```typescript
   interface ApiItem { id: string; }
@@ -361,15 +280,7 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   }
   ```
 
-- [ ] **Step 3: Run typecheck**
-
-  ```bash
-  cd tests && pnpm typecheck
-  ```
-
-  Expected: no errors.
-
-- [ ] **Step 4: Commit**
+- [ ] **Step 8: Commit the helpers**
 
   ```bash
   git add tests/cypress/support/helpers/dates.ts \
@@ -377,14 +288,43 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   git commit -m "test(helpers): add date utilities and API seeding helpers"
   ```
 
+- [ ] **Step 9: Run typecheck**
+
+  ```bash
+  cd tests && pnpm typecheck
+  ```
+
+  Expected: no errors.
+
+- [ ] **Step 10: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-types-and-helpers
+  gh pr create --base main \
+    --title "test(e2e): add seeded IDs, date helper, and API seeding helper" \
+    --body "Shared infrastructure for all E2E spec tasks. Adds fixed GUIDs to TestEmployee and TestLeaveType (from DbSeeder.cs), a date offset utility, and cy.request helpers for API-level test data setup/teardown. No spec files yet — all later spec tasks depend on this."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
+  ```
+
 ---
 
-### Task 4: Sign In spec
+### Task 3: Sign In spec
+
+**Branch:** `test/e2e-sign-in-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/sign-in/sign-in.cy.ts`
 
-- [ ] **Step 1: Write `sign-in.cy.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-sign-in-spec
+  ```
+
+- [ ] **Step 2: Write `sign-in.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -420,7 +360,7 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
   });
   ```
 
-- [ ] **Step 2: Run typecheck**
+- [ ] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -428,23 +368,44 @@ The GUIDs are fixed seeds from `src/backend/LeaveCalendar.Web/Infrastructure/Per
 
   Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/sign-in/sign-in.cy.ts
   git commit -m "test(sign-in): add sign-in E2E spec"
   ```
 
+- [ ] **Step 5: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-sign-in-spec
+  gh pr create --base main \
+    --title "test(sign-in): add sign-in E2E spec" \
+    --body "Covers: happy path, wrong credentials, already-signed-in redirect, and unauthenticated redirect. Blocked on frontend implementation — typecheck passes."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
+  ```
+
 ---
 
-### Task 5: Navigation Bar spec
+### Task 4: Navigation Bar spec
+
+**Branch:** `test/e2e-nav-bar-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/navigation/navigation-bar.cy.ts`
 
-Per the functional spec (Nav Bar page): My Leave link has no role restriction; Leave Management is Admin-only. Admin sees all three links. This aligns with `NavigationBar.checkAdminLinks()`.
+Per the functional spec (Nav Bar page): My Leave link has **no role restriction**; Leave Management is Admin-only. Admin sees all three links. `NavigationBar.checkAdminLinks()` is already correct.
 
-- [ ] **Step 1: Write `navigation-bar.cy.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-nav-bar-spec
+  ```
+
+- [ ] **Step 2: Write `navigation-bar.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -479,7 +440,7 @@ Per the functional spec (Nav Bar page): My Leave link has no role restriction; L
   });
   ```
 
-- [ ] **Step 2: Run typecheck**
+- [ ] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -487,23 +448,44 @@ Per the functional spec (Nav Bar page): My Leave link has no role restriction; L
 
   Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/navigation/navigation-bar.cy.ts
   git commit -m "test(nav): add navigation bar E2E spec"
   ```
 
+- [ ] **Step 5: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-nav-bar-spec
+  gh pr create --base main \
+    --title "test(nav): add navigation bar E2E spec" \
+    --body "Covers: Employee links, Admin links (Calendar + My Leave + Leave Management per functional spec), user name display, sign out. Blocked on frontend implementation — typecheck passes."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
+  ```
+
 ---
 
-### Task 6: Calendar Overview spec
+### Task 5: Calendar Overview spec
+
+**Branch:** `test/e2e-calendar-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/calendar/calendar-overview.cy.ts`
 
-The month-boundary test seeds a leave registration via the admin API and cleans it up in `afterEach`.
+The month-boundary test seeds leave via the admin API and cleans up in `afterEach`.
 
-- [ ] **Step 1: Write `calendar-overview.cy.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-calendar-spec
+  ```
+
+- [ ] **Step 2: Write `calendar-overview.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -558,7 +540,6 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
 
       CalendarPage.visit();
       CalendarPage.getLeaveChips().should('have.length.at.least', 1);
-
       CalendarPage.clickNextMonth();
       CalendarPage.getLeaveChips().should('have.length.at.least', 1);
     });
@@ -583,7 +564,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   });
   ```
 
-- [ ] **Step 2: Run typecheck**
+- [ ] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -591,23 +572,44 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
 
   Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/calendar/calendar-overview.cy.ts
   git commit -m "test(calendar): add calendar overview E2E spec"
   ```
 
+- [ ] **Step 5: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-calendar-spec
+  gh pr create --base main \
+    --title "test(calendar): add calendar overview E2E spec" \
+    --body "Covers: month navigation, multi-day leave spanning a month boundary, empty month, error state + retry. Blocked on frontend implementation — typecheck passes."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
+  ```
+
 ---
 
-### Task 7: My Leave spec
+### Task 6: My Leave spec
+
+**Branch:** `test/e2e-my-leave-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/my-leave/my-leave.cy.ts`
 
-`apiCleanupMyLeave` is called in both `beforeEach` (ensures clean state even if a previous test failed mid-cleanup) and `afterEach` (immediate tidy-up).
+`apiCleanupMyLeave` runs in both `beforeEach` (robustness if a previous test failed mid-cleanup) and `afterEach` (immediate tidy-up).
 
-- [ ] **Step 1: Write `my-leave.cy.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-my-leave-spec
+  ```
+
+- [ ] **Step 2: Write `my-leave.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -664,7 +666,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
       });
     });
 
-    // ── Register leave ─���───────────────────────────────────────────────────────
+    // ── Register leave ─────────────────────────────────────────────────────────
 
     describe('register leave', () => {
       it('happy path — future start date, valid type → form closes, table refreshes', () => {
@@ -731,7 +733,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
         });
         MyLeavePage.visit();
         MyLeavePage.clickRegister();
-        // Start of new period == end of existing period → adjacency counts as overlap per business rules
+        // Start of new period == end of existing period — adjacency counts as overlap per business rules
         LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(10), endDate: isoDate(15) });
         LeaveForm.submit();
         LeaveForm.checkFormError(TEXTS.MY_LEAVE.FORM_OVERLAP_ERROR);
@@ -742,7 +744,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
         MyLeavePage.clickRegister();
         LeaveForm.fill({ leaveType: LEAVE_TYPE_PUBLIC_HOLIDAY, startDate: isoDate(5), endDate: isoDate(7) });
         LeaveForm.submit();
-        // Exact error text comes from the frontend resource file — verify against running app before asserting text
+        // Exact error text is in the frontend resource file — assert text once frontend is implemented
         LeaveForm.get().should('be.visible');
       });
 
@@ -790,7 +792,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
       });
     });
 
-    // ── Edit leave ───────────────────────────��─────────────────────────────────
+    // ── Edit leave ─────────────────────────────────────────────────────────────
 
     describe('edit leave', () => {
       beforeEach(() => {
@@ -897,7 +899,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   });
   ```
 
-- [ ] **Step 2: Run typecheck**
+- [ ] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -905,23 +907,44 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
 
   Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/my-leave/my-leave.cy.ts
   git commit -m "test(my-leave): add My Leave E2E spec"
   ```
 
+- [ ] **Step 5: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-my-leave-spec
+  gh pr create --base main \
+    --title "test(my-leave): add My Leave E2E spec" \
+    --body "Covers: empty/error/retry states, register (happy path, today, past, end<start, 1-day, overlap, adjacency overlap, restricted type, cancel), edit/delete visibility, edit (happy path, today start, past start, end<start, cancel), delete (dialog, cancel, confirm), DD-MM-YYYY date format. Blocked on frontend implementation — typecheck passes."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
+  ```
+
 ---
 
-### Task 8: Leave Management spec
+### Task 7: Leave Management spec
+
+**Branch:** `test/e2e-leave-management-spec`
 
 **Files:**
 - Modify: `tests/cypress/support/constants.ts` — add `FORM_END_DATE_ERROR` to `LEAVE_MANAGEMENT`
 - Modify: `tests/cypress/support/pages/AdminLeavePage.ts` — add `getRetryButton()`
 - Create: `tests/cypress/e2e/leave-management/leave-management.cy.ts`
 
-- [ ] **Step 1: Add missing constant to `constants.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-leave-management-spec
+  ```
+
+- [ ] **Step 2: Add `FORM_END_DATE_ERROR` to `constants.ts`**
 
   ```typescript
   export const TEXTS = {
@@ -950,9 +973,9 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   } as const;
   ```
 
-- [ ] **Step 2: Add `getRetryButton()` to `AdminLeavePage.ts`**
+- [ ] **Step 3: Add `getRetryButton()` to `AdminLeavePage.ts`**
 
-  In `AdminLeavePage.ts`, after `getErrorState()`, add:
+  After `getErrorState()`, add:
 
   ```typescript
   static getRetryButton() {
@@ -960,7 +983,15 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   }
   ```
 
-- [ ] **Step 3: Write `leave-management.cy.ts`**
+- [ ] **Step 4: Commit support file changes**
+
+  ```bash
+  git add tests/cypress/support/constants.ts \
+          tests/cypress/support/pages/AdminLeavePage.ts
+  git commit -m "test(support): add leave management end-date error constant and retry button getter"
+  ```
+
+- [ ] **Step 5: Write `leave-management.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -974,11 +1005,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   } from '../../support/testdata/employees';
   import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY } from '../../support/testdata/leaveTypes';
   import { TEXTS } from '../../support/constants';
-  import {
-    apiSignIn,
-    apiAdminCreateLeave,
-    apiCleanupAdminLeave,
-  } from '../../support/helpers/api';
+  import { apiSignIn, apiAdminCreateLeave, apiCleanupAdminLeave } from '../../support/helpers/api';
   import { isoDate } from '../../support/helpers/dates';
 
   describe('Leave Management (Admin only)', () => {
@@ -1083,6 +1110,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
         AdminLeavePage.visit();
         AdminLeavePage.clickAddLeave();
         LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+        // Start of new period == end of existing period — adjacency counts as overlap
         LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(10), endDate: isoDate(15) });
         LeaveForm.submit();
         LeaveForm.checkFormError(TEXTS.LEAVE_MANAGEMENT.FORM_OVERLAP_ERROR);
@@ -1219,7 +1247,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
     // ── Pagination ─────────────────────────────────────────────────────────────
 
     describe('pagination', () => {
-      it('prev button disabled on first page, next disabled when only one page', () => {
+      it('prev button disabled on first page, next disabled when only one page exists', () => {
         AdminLeavePage.getPrevPage().should('be.disabled');
         AdminLeavePage.getNextPage().should('be.disabled');
       });
@@ -1238,7 +1266,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   });
   ```
 
-- [ ] **Step 4: Run typecheck**
+- [ ] **Step 6: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -1246,23 +1274,42 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
 
   Expected: no errors.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
   ```bash
-  git add tests/cypress/support/constants.ts \
-          tests/cypress/support/pages/AdminLeavePage.ts \
-          tests/cypress/e2e/leave-management/leave-management.cy.ts
+  git add tests/cypress/e2e/leave-management/leave-management.cy.ts
   git commit -m "test(leave-management): add Leave Management E2E spec"
+  ```
+
+- [ ] **Step 8: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-leave-management-spec
+  gh pr create --base main \
+    --title "test(leave-management): add Leave Management E2E spec" \
+    --body "Covers: empty/error/retry states, create (any type, 1-day, end<start, overlap, adjacency overlap, cancel), edit (no date restriction, employee locked, end<start, cancel), delete (dialog, cancel, confirm), filters (employee, type, date range), pagination, route guard for Employee role. Also adds FORM_END_DATE_ERROR constant and getRetryButton() getter. Blocked on frontend implementation — typecheck passes."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
   ```
 
 ---
 
-### Task 9: Security spec
+### Task 8: Security spec
+
+**Branch:** `test/e2e-security-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/security/security.cy.ts`
 
-- [ ] **Step 1: Write `security.cy.ts`**
+- [ ] **Step 1: Branch off main**
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -b test/e2e-security-spec
+  ```
+
+- [ ] **Step 2: Write `security.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -1313,7 +1360,7 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
   });
   ```
 
-- [ ] **Step 2: Run typecheck**
+- [ ] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -1321,46 +1368,47 @@ The month-boundary test seeds a leave registration via the admin API and cleans 
 
   Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/security/security.cy.ts
   git commit -m "test(security): add security E2E smoke spec"
   ```
 
+- [ ] **Step 5: Push, open PR, and squash-merge**
+
+  ```bash
+  git push -u origin test/e2e-security-spec
+  gh pr create --base main \
+    --title "test(security): add security E2E smoke spec" \
+    --body "Covers: unauthenticated redirect for all protected routes, Employee route guard for /admin/leave, Employee cannot see another employee's leave on My Leave. Blocked on frontend implementation — typecheck passes."
+  gh pr view <n> --json mergeable,mergeStateStatus --jq '{mergeable,state:.mergeStateStatus}'
+  gh pr merge <n> --squash --delete-branch
+  ```
+
 ---
 
-## Self-Review
+## PR sequence summary
 
-### Spec coverage
-
-All scenarios from the updated `tests/plan.md` are covered:
-
-| Group | Scenarios | Task |
+| PR | Branch | Contents |
 |---|---|---|
-| Sign In | 4 | Task 4 |
-| Navigation Bar | 4 | Task 5 |
-| Calendar Overview | 4 | Task 6 |
-| My Leave — table state | 3 | Task 7 |
-| My Leave — register (incl. 1-day, adjacency, DD-MM-YYYY) | 9 | Task 7 |
-| My Leave — visibility | 2 | Task 7 |
-| My Leave — edit | 5 | Task 7 |
-| My Leave — delete | 3 | Task 7 |
-| My Leave — date format | 1 | Task 7 |
-| Leave Management — table state | 3 | Task 8 |
-| Leave Management — create (incl. 1-day, adjacency) | 6 | Task 8 |
-| Leave Management — edit | 4 | Task 8 |
-| Leave Management — delete | 3 | Task 8 |
-| Leave Management — filters | 3 | Task 8 |
-| Leave Management — pagination | 1 | Task 8 |
-| Leave Management — route guard | 1 | Task 8 |
-| Security | 3 | Task 9 |
+| ✅ #38 | `docs/e2e-spec-implementation-plan` | plan.md fixes + this plan document |
+| Task 2 | `test/e2e-types-and-helpers` | TestEmployee/TestLeaveType IDs + dates.ts + api.ts |
+| Task 3 | `test/e2e-sign-in-spec` | `sign-in.cy.ts` |
+| Task 4 | `test/e2e-nav-bar-spec` | `navigation-bar.cy.ts` |
+| Task 5 | `test/e2e-calendar-spec` | `calendar-overview.cy.ts` |
+| Task 6 | `test/e2e-my-leave-spec` | `my-leave.cy.ts` |
+| Task 7 | `test/e2e-leave-management-spec` | `leave-management.cy.ts` + constants + AdminLeavePage |
+| Task 8 | `test/e2e-security-spec` | `security.cy.ts` |
 
-### Known limitations
+Each task branches off the **merged** `main` from the previous task. Merge Task 2 before starting any spec task — all spec tasks depend on the helpers and IDs it introduces.
 
-- **Frontend dependency** — all specs fail at runtime until the frontend serves on `http://localhost:3000`. Use `pnpm typecheck` for verification during spec authoring.
-- **Timezone edge case** — `isoDate()` uses the test runner's local system date. Tests asserting "today" behaviour may behave unexpectedly near midnight Europe/Amsterdam time. Run during Amsterdam daytime hours or add a buffer (e.g. use `isoDate(0)` only when the runner is in the same timezone).
-- **TYPE_NOT_REGISTERABLE error text** — the exact UI message for a restricted leave type comes from the frontend `.resources.ts` file, which does not exist yet. The test in Task 7 does not assert the error text; add the assertion against `TEXTS` once the frontend is implemented and the wording is confirmed.
-- **AdminLeavePage `getRetryButton()`** — added in Task 8. The `data-test` value `AdminLeave_RetryButton` is provisional; verify against the rendered HTML once the frontend is built.
-- **Filter interactions** — filter tests assume filters are applied on change (as per the functional spec). If the frontend uses a submit-button pattern instead, update the filter test steps to submit after setting each filter.
-- **`apiCleanupAdminLeave` pagination** — the cleanup helper fetches page 1 of the admin leave list (default pageSize = 20). If a test creates more than 20 records, the helper will not clean up all of them. Expand to iterate pages if needed.
+---
+
+## Known limitations
+
+- **Frontend dependency** — all specs fail at runtime until the frontend serves on `http://localhost:3000`. Run `pnpm typecheck` in `tests/` to verify TypeScript during spec authoring.
+- **Timezone edge case** — `isoDate()` uses the test runner's local system date. Tests asserting "today" behaviour may behave unexpectedly near midnight Europe/Amsterdam time.
+- **TYPE_NOT_REGISTERABLE error text** — exact UI message comes from the frontend resource file; the Public Holiday test in Task 6 does not assert the text yet. Add the assertion to `TEXTS` once the frontend is implemented.
+- **AdminLeavePage `getRetryButton()`** — added in Task 7 with selector `AdminLeave_RetryButton`. Verify the `data-test` value against the rendered HTML once the frontend is built.
+- **`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20). If a test creates more than 20 records, extend the helper to iterate pages.
