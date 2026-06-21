@@ -56,7 +56,7 @@ describe('Calendar Overview', () => {
 
   it('empty month — all day cells render, no leave chips (12 months ahead)', () => {
     for (let i = 0; i < 12; i++) CalendarPage.clickNextMonth();
-    CalendarPage.getDayCells().should('have.length.at.least', 28);
+    CalendarPage.getDayCells().should('have.length.at.least', 28).and('have.length.at.most', 31);
     CalendarPage.getLeaveChips().should('not.exist');
   });
 
