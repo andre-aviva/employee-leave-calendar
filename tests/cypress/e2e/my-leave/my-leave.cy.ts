@@ -158,12 +158,24 @@ describe('My Leave', () => {
       if (adminToken) apiCleanupAdminLeave(adminToken);
     });
 
-    it('buttons NOT visible on today-dated or past-dated registrations', () => {
+    it('buttons NOT visible on past-dated registrations', () => {
       apiAdminCreateLeave(adminToken, {
         employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
         leaveTypeId: LEAVE_TYPE_VACATION.id,
         startDate: isoDate(-7),
         endDate: isoDate(-5),
+      });
+      MyLeavePage.visit();
+      MyLeavePage.checkEditButtonNotExist(0);
+      MyLeavePage.checkDeleteButtonNotExist(0);
+    });
+
+    it('buttons NOT visible when start date is today — today is the boundary', () => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(0),
+        endDate: isoDate(2),
       });
       MyLeavePage.visit();
       MyLeavePage.checkEditButtonNotExist(0);
@@ -316,8 +328,21 @@ describe('My Leave', () => {
       });
       MyLeavePage.visit();
       MyLeavePage.clickEdit(0);
+      LeaveForm.getLeaveTypeSelect().should('have.value', LEAVE_TYPE_VACATION.name);
       LeaveForm.getStartDateInput().should('have.value', startDate);
       LeaveForm.getEndDateInput().should('have.value', endDate);
+    });
+
+    it('edit form has no Employee selector', () => {
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+      });
+      MyLeavePage.visit();
+      MyLeavePage.clickEdit(0);
+      LeaveForm.getEmployeeSelect().should('not.exist');
+      LeaveForm.cancel();
     });
   });
 
