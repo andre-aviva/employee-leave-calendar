@@ -169,6 +169,14 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.visit();
     });
 
+    it('edit form is pre-populated with the existing registration values', () => {
+      AdminLeavePage.clickEdit(0);
+      LeaveForm.getLeaveTypeSelect().should('have.value', LEAVE_TYPE_VACATION.name);
+      LeaveForm.getStartDateInput().should('have.value', isoDate(-30));
+      LeaveForm.getEndDateInput().should('have.value', isoDate(-28));
+      LeaveForm.cancel();
+    });
+
     it('edit for any employee — no date restriction for admin → table refreshes', () => {
       AdminLeavePage.clickEdit(0);
       LeaveForm.get().should('be.visible');
