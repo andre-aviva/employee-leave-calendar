@@ -28,8 +28,8 @@
 | Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, cypress-axe, axe-html-reporter, POM skill |
-| E2E specs | **Written and merged** (#41–#46) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
-| FR gap fill | **Open PR #60** — adds empty credentials, root redirect, app name link, multi-chip, admin on /calendar, edit pre-fill, dialog content/backdrop, leave type badge, past-date admin create, per-employee overlap isolation, filter empty state, multi-type filter, filter triggers fetch, filter resets page, 21+ pagination, edit-to-overlap, post-sign-out redirect |
+| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
+| FR gap fill | **Merged** (#61–#73) — POM getters (#61), nav bar (#71), shared Confirmation Dialog spec (#72), shared LeaveTypeBadge spec (#73), sign-in (#62), security (#63), plan notes (#64), calendar (#65), my-leave (#66), leave-management (#67) |
 | Accessibility suite | **Merged PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
 
 ---
@@ -240,8 +240,12 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 |---|---|
 | Any | Happy path — valid credentials → redirected to /calendar |
 | Any | Wrong credentials → error shown on page |
+| Any | Empty username field → validation error shown, form stays on /sign-in |
+| Any | Empty password field → validation error shown, form stays on /sign-in |
 | Any | Already signed in → navigating to /sign-in redirects to /calendar |
 | Any | Unauthenticated → navigating to any protected page redirects to /sign-in |
+| Any | Unauthenticated root `/` → redirects to /sign-in |
+| Any | Authenticated root `/` → redirects to /calendar |
 
 ### Navigation Bar
 
@@ -250,6 +254,10 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Sees Calendar Overview + My Leave; no Leave Management link |
 | Admin | Sees Calendar Overview + My Leave + Leave Management |
 | Any | Signed-in user's name displayed in the nav bar |
+| Admin | Admin user name specifically shown in the nav bar |
+| Any | App name (top-left) is a link that navigates to /calendar |
+| Any | Navigation bar is visible on /my-leave |
+| Admin | Navigation bar is visible on /admin/leave |
 | Any | Sign out → redirected to /sign-in |
 
 ### Calendar Overview
@@ -260,6 +268,11 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee, Admin | Multi-day leave spanning a month boundary shows in both months |
 | Employee, Admin | Empty month — all day cells render, no leave chips |
 | Employee, Admin | Error state — retry button reloads data |
+| Admin | Admin can access /calendar and see the calendar grid |
+| Employee, Admin | Two employees with leave on the same day → multiple chips visible |
+| Employee, Admin | Month navigation triggers a new API fetch |
+| Employee, Admin | Leave chip shows the employee name |
+| Employee, Admin | Leave chip shows the description when one is provided |
 
 ### My Leave
 
@@ -277,7 +290,12 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Register — restricted leave type (Public Holiday) → TYPE_NOT_REGISTERABLE error below Leave Type field |
 | Employee | Register — Cancel closes form without saving |
 | Employee | Edit and delete actions only visible on registrations with a **future** start date — not visible on today-dated or past-dated registrations |
+| Employee | Edit and delete NOT visible when start date is today (today is the boundary — FR §3) |
+| Employee | Leave registration form has no Employee selector |
+| Employee | Public Holiday not available in the Employee leave type dropdown |
 | Employee | Edit — happy path (future registration) → form closes, table refreshes |
+| Employee | Edit — form is pre-populated with existing leave type, start date, and end date |
+| Employee | Edit — form has no Employee selector |
 | Employee | Edit — set new start date to today → succeeds (today is a valid new start date) |
 | Employee | Edit — set new start date to a past date → START_DATE_IN_PAST error below Start Date field |
 | Employee | Edit — end date before start date → END_DATE_ERROR below End Date field |
@@ -285,7 +303,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Employee | Delete — Confirm → registration deleted, table refreshes |
 | Employee | Dates in the leave table display as DD-MM-YYYY |
-| Admin | Same register/edit/delete flows (Admin also uses My Leave for own leave) |
+| Admin | Admin can register own leave via /my-leave |
 
 ### Leave Management (Admin only)
 
@@ -294,20 +312,30 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Empty state shown when no records match active filters |
 | Admin | Error state — retry button reloads data |
 | Admin | Create leave for any employee, any leave type including Public Holiday → table refreshes |
+| Admin | Create — no start date restriction; past dates accepted |
+| Admin | Create — two different employees can have overlapping dates (overlap is per-employee) |
 | Admin | Create — end date before start date → END_DATE_ERROR below End Date field |
-| Admin | Create — overlap → OVERLAP form-level error |
+| Admin | Create — overlap for same employee → OVERLAP form-level error |
 | Admin | Create — 1-day leave (start == end) → succeeds |
 | Admin | Create — leave starting the day an existing registration ends → OVERLAP error (adjacency counts as overlap) |
 | Admin | Create — Cancel closes form without saving |
 | Admin | Edit leave for any employee — no date restriction → table refreshes |
 | Admin | Edit — Employee field is locked to the original employee |
+| Admin | Edit — editing to overlap a different registration for the same employee → OVERLAP error |
 | Admin | Edit — end date before start date → END_DATE_ERROR below End Date field |
 | Admin | Edit — Cancel closes form without saving |
 | Admin | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Admin | Delete — Confirm → registration deleted, table refreshes |
-| Admin | Overlap check still applies for admin create/edit → OVERLAP error |
-| Admin | Filtering by employee, type, date range |
-| Admin | Pagination — 20 records per page; changing a filter resets to page 1 |
+| Admin | Dates in the leave table display as DD-MM-YYYY |
+| Admin | Filter by employee — shows only matching records |
+| Admin | Filter by leave type — shows only matching records |
+| Admin | Filter by date range — shows only records within the range |
+| Admin | Filter by employee with no matching records → empty state |
+| Admin | Filter by multiple leave types simultaneously |
+| Admin | Changing a filter triggers a new API fetch |
+| Admin | Pagination — 20 records per page |
+| Admin | Applying a filter resets pagination to page 1 |
+| Admin | 21+ records — next page button becomes enabled |
 | Employee | Navigating to /admin/leave → redirected (route guard) |
 
 ### Security (E2E smoke)
@@ -317,6 +345,18 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Unauthenticated user → redirect to /sign-in for all protected routes |
 | Employee-role user → /admin/leave redirected by frontend route guard |
 | Employee cannot see or interact with another employee's leave on My Leave page |
+| Employee — after sign-out, /calendar and /my-leave redirect to /sign-in |
+| Admin — after sign-out, /admin/leave redirects to /sign-in |
+
+### Shared components
+
+| Component | Scenario |
+|---|---|
+| Confirmation Dialog | Shows correct title, message, confirm label, and cancel label on delete |
+| Confirmation Dialog | Clicking the backdrop does NOT close the dialog |
+| Leave Type Badge | Badge visible in a My Leave table row |
+| Leave Type Badge | Badge visible in a Leave Management table row |
+| Leave Type Badge | Badge shows the correct leave type name |
 
 ---
 
@@ -325,7 +365,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 - ~~**Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today~~ — fixed in #19.
 - ~~**Admin slices not yet implemented**~~ — resolved in #12; all four admin slices (`ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave`) are implemented and integration-tested.
 - **Frontend not yet implemented** — blocks all E2E tests. Specs are written and merged; they will run once the frontend serves on `http://localhost:3000` and `data-test` attributes are in place.
-- **Accessibility (cypress-axe)** — AD-QA-1 specifies cypress-axe as the WCAG 2.2 AA accessibility tool. Not yet installed. Add once the frontend is implemented.
+- ~~**Accessibility (cypress-axe)** — AD-QA-1 specifies cypress-axe as the WCAG 2.2 AA accessibility tool. Not yet installed.~~ — installed and merged in #59; a11y spec covers all 4 pages.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
 - `cypress.config.ts` baseUrl is `http://localhost:3000` (placeholder — update once dev server port is confirmed).
