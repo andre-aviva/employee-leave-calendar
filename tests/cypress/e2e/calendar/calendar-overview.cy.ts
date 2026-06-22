@@ -121,7 +121,8 @@ describe('Calendar Overview', () => {
     }).then((id) => createdIds.push(id));
 
     CalendarPage.visit();
-    CalendarPage.getLeaveChips().first().should('contain.text', EMPLOYEE_EDDIE_EMPLOYEE.name);
+    // FR: chip shows employee's first name or initials — assert on first name, not full display name
+    CalendarPage.getLeaveChips().first().should('contain.text', EMPLOYEE_EDDIE_EMPLOYEE.name.split(' ')[0]);
   });
 
   it('leave chip shows the description when one is provided', () => {
