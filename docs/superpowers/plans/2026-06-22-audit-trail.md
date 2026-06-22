@@ -18,7 +18,7 @@
 - **Actor sentinel:** non-request writes (no authenticated `HttpContext`) record actor `System` with `ActorEmployeeId = null`, `ActorName = "System"`, `ActorRole = "System"`.
 - **Atomicity:** the `AuditLogEntry` is added to the audited `DbContext` inside `SavingChanges`, so it commits in the same `SaveChanges`/transaction (never a separate write).
 - **Only `LeaveRegistration` is audited** this round. The interceptor must ignore every other entity (and therefore never audit `AuditLogEntry` itself → no recursion).
-- **Git:** implement on a branch `feat/audit-trail` off an up-to-date `main`; atomic Conventional Commits; squash-and-merge the PR. (The spec/plan docs live on `docs/audit-trail-design` and merge separately.)
+- **Git:** the controller has already created and checked out `feat/audit-trail` (branched off `docs/audit-trail-design`, so the spec and plan travel with the implementation and land in a single feature PR — no separate docs PR). Make atomic Conventional Commits; do **not** create or switch branches. The PR squash-merges to `main`.
 - **Build/test commands:** full suite `dotnet test src/backend/LeaveCalendar.sln`; focused `dotnet test src/backend/LeaveCalendar.IntegrationTests --filter "FullyQualifiedName~<Class>"`. Integration tests require a running Docker/Podman (Testcontainers).
 - **Seeded fixtures** (from `DbSeeder`, available in tests):
   - Alice Admin — `22222222-0000-0000-0000-000000000001`, `admin` / `Admin!123`, role `Admin`.
@@ -42,12 +42,13 @@
 **Interfaces:**
 - Produces: `enum AuditAction { Insert, Update, Delete }`; `sealed class AuditLogEntry` with `Guid Id`, `DateTimeOffset OccurredAt`, `AuditAction Action`, `Guid EntityId`, `Guid SubjectEmployeeId`, `Guid? ActorEmployeeId`, `string ActorName`, `string ActorRole`, `string Changes`; `LeaveDbContext.AuditLog` (`DbSet<AuditLogEntry>`).
 
-- [ ] **Step 1: Create the feature branch**
+- [ ] **Step 1: Confirm the feature branch**
+
+The controller has already created and checked out `feat/audit-trail`. Verify you are on it; do **not** create or switch branches:
 
 ```bash
 cd /Users/saber/dev/employee-leave-calendar
-git checkout main && git pull --ff-only origin main
-git checkout -b feat/audit-trail
+git branch --show-current   # expect: feat/audit-trail
 ```
 
 - [ ] **Step 2: Write the failing schema test**
@@ -942,7 +943,7 @@ public class ViewAuditTrailTests(ApiFactory factory) : IntegrationTestBase(facto
     }
 
     [Fact]
-    public async Task Get_audit_returns_all_rows_newest_first()
+    public async Task Get_audit_returns_all_rows()
     {
         await Factory.ResetAsync();
         await SeedAuditViaApiAsync();
@@ -952,7 +953,9 @@ public class ViewAuditTrailTests(ApiFactory factory) : IntegrationTestBase(facto
 
         body!.TotalCount.Should().Be(3);
         body.Items.Should().HaveCount(3);
-        body.Items.Should().BeInDescendingOrder(x => x.OccurredAt);
+        // NOTE: the handler orders by OccurredAt descending, but ApiFactory's clock is fixed so
+        // all rows share one timestamp — ordering can't be asserted meaningfully here. This test
+        // verifies the rows are all returned; pagination/filtering are covered by the tests below.
     }
 
     [Fact]
