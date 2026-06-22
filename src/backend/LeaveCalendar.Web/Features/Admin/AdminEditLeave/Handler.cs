@@ -16,7 +16,9 @@ public static class Handler
         var type = await db.LeaveTypes.FirstOrDefaultAsync(t => t.Id == request.LeaveTypeId, ct);
         if (type is null) return Results.NotFound();
 
-        // Domain invariants (admin: no date/type-eligibility restriction)
+        // Admin path intentionally omits EnsureStartTodayOrFuture and the editable-window rule so
+        // admins can amend already-started / historical leave (policy: LeaveRules summary / issue #36).
+        // The role-neutral invariants still apply.
         LeaveRules.EnsureEndOnOrAfterStart(request.StartDate, request.EndDate);
 
         // Overlap check against the employee's date-overlapping leave only (excluding self via excludingId)
