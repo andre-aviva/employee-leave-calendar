@@ -75,12 +75,12 @@ export function apiAdminDeleteLeave(token: string, id: string): void {
 }
 
 // GET /api/admin/leave returns PagedResult — use .body.items, not .body
-// pageSize=1000 ensures all records are fetched in one request regardless of server default
+// pageSize=100 is the server maximum (Handler.cs clamps anything higher to 100)
 export function apiCleanupAdminLeave(token: string): void {
   cy.request<PagedResult>({
     method: 'GET',
     url: '/api/admin/leave',
-    qs: { pageSize: 1000 },
+    qs: { pageSize: 100 },
     headers: { Authorization: `Bearer ${token}` },
   }).then(({ body }) => {
     body.items.forEach(({ id }) => apiAdminDeleteLeave(token, id));
