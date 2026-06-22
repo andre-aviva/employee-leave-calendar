@@ -178,6 +178,8 @@ public class AuditTrailTests(ApiFactory factory) : IntegrationTestBase(factory)
         var update = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Update);
         update.EntityId.Should().Be(regId);
         update.ActorEmployeeId.Should().Be(EddieId);
+        update.SubjectEmployeeId.Should().Be(EddieId);
+        update.ActorRole.Should().Be("Employee");
     }
 
     [Fact]
@@ -193,5 +195,7 @@ public class AuditTrailTests(ApiFactory factory) : IntegrationTestBase(factory)
         var delete = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Delete);
         delete.EntityId.Should().Be(regId);
         delete.ActorEmployeeId.Should().Be(EddieId);
+        delete.SubjectEmployeeId.Should().Be(EddieId);
+        delete.ActorRole.Should().Be("Employee");
     }
 }
