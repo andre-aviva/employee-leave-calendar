@@ -28,7 +28,7 @@
 | Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, cypress-axe, axe-html-reporter, POM skill |
-| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
+| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73, #76–#77) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
 | FR gap fill | **Merged** (#61–#73) — POM getters (#61), nav bar (#71), shared Confirmation Dialog spec (#72), shared LeaveTypeBadge spec (#73), sign-in (#62), security (#63), plan notes (#64), calendar (#65), my-leave (#66), leave-management (#67) |
 | Accessibility suite | **Merged PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
 
@@ -275,6 +275,9 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee, Admin | Month navigation triggers a new API fetch |
 | Employee, Admin | Leave chip shows the employee name |
 | Employee, Admin | Leave chip shows the description when one is provided |
+| Employee, Admin | Leave type legend is visible below the calendar grid |
+| Employee, Admin | Leave type legend lists all four leave types |
+| Employee, Admin | Calendar day cell shows overflow indicator when more chips than fit |
 
 ### My Leave
 
@@ -327,6 +330,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Create — leave starting the day an existing registration ends → OVERLAP error (adjacency counts as overlap) |
 | Admin | Create — Cancel closes form without saving |
 | Admin | Edit leave for any employee — no date restriction → table refreshes |
+| Admin | Edit — form is pre-populated with the existing employee, leave type, start date, and end date |
 | Admin | Edit — Employee field is locked to the original employee |
 | Admin | Edit — editing to overlap a different registration for the same employee → OVERLAP error |
 | Admin | Edit — end date before start date → END_DATE_ERROR below End Date field |
@@ -423,7 +427,6 @@ The following gaps were identified during gap analysis but are **not** in the fu
 | Filter reset button clears all filters and reloads the full dataset | Component Library |
 | Select (leave type dropdown) placeholder is enforced client-side — submitting without a selection shows a field error | Component Library |
 | Table column sort — clicking a column header toggles sort direction | Component Library |
-| Chip overflow indicator — when a calendar day cell has more chips than it can display, an overflow indicator ("+N more") is shown | Component Library |
 
 ### Accessibility (beyond WCAG axe scan)
 
