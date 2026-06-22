@@ -286,4 +286,108 @@ describe('My Leave', () => {
       MyLeavePage.getRow(0).should('contain.text', displayDate(endDate));
     });
   });
+
+  // ── Form field visibility ─────────────────────────────────────────────────────
+
+  describe('form field visibility', () => {
+    it('leave form for Employee has no Employee selector', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.get().should('be.visible');
+      LeaveForm.getEmployeeSelect().should('not.exist');
+    });
+
+    it('Public Holiday is not available in the Employee leave type dropdown', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.getLeaveTypeSelect()
+        .should('not.contain.text', LEAVE_TYPE_PUBLIC_HOLIDAY.name);
+    });
+  });
+
+  // ── Edit pre-fill ─────────────────────────────────────────────────────────────
+
+  describe('edit pre-fill', () => {
+    it('edit form is pre-populated with the existing registration values', () => {
+      const startDate = isoDate(14);
+      const endDate = isoDate(16);
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate,
+        endDate,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.clickEdit(0);
+      LeaveForm.getStartDateInput().should('have.value', startDate);
+      LeaveForm.getEndDateInput().should('have.value', endDate);
+    });
+  });
+
+  // ── Admin on /my-leave ────────────────────────────────────────────────────────
+
+  describe('admin on /my-leave', () => {
+    beforeEach(() => {
+      cy.clearAllCookies();
+      cy.clearAllLocalStorage();
+      SignInPage.visit();
+      SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+      MyLeavePage.visit();
+    });
+
+    afterEach(() => {
+      apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then((t) => {
+        apiCleanupMyLeave(t);
+      });
+    });
+
+    it('Admin can register their own leave via /my-leave', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(7), endDate: isoDate(9) });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      MyLeavePage.checkRowCount(1);
+    });
+  });
+
+  // ── Confirmation dialog content ───────────────────────────────────────────────
+
+  describe('confirmation dialog content', () => {
+    beforeEach(() => {
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+      });
+      MyLeavePage.visit();
+    });
+
+    it('dialog shows correct title, message, and button labels', () => {
+      MyLeavePage.clickDelete(0);
+      ConfirmationDialog.getTitle().should('contain.text', TEXTS.CONFIRMATION_DIALOG.TITLE);
+      ConfirmationDialog.getMessage().should('contain.text', TEXTS.CONFIRMATION_DIALOG.MESSAGE);
+      ConfirmationDialog.getConfirmButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CONFIRM_LABEL);
+      ConfirmationDialog.getCancelButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CANCEL_LABEL);
+    });
+
+    it('clicking the backdrop closes the dialog without deleting', () => {
+      MyLeavePage.clickDelete(0);
+      ConfirmationDialog.checkVisible();
+      ConfirmationDialog.clickBackdrop();
+      ConfirmationDialog.checkNotExist();
+      MyLeavePage.checkRowCount(1);
+    });
+  });
+
+  // ── Leave type badge ──────────────────────────────────────────────────────────
+
+  describe('leave type badge', () => {
+    it('leave type badge is visible in the table row', () => {
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
+      MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_VACATION.name);
+    });
+  });
 });
