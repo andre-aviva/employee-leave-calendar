@@ -1,8 +1,9 @@
 import SignInPage from '../../support/pages/SignInPage';
 import CalendarPage from '../../support/pages/CalendarPage';
-import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE } from '../../support/testdata/employees';
+import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
 import { apiSignIn, apiAdminCreateLeave, apiAdminDeleteLeave } from '../../support/helpers/api';
+import { isoDate } from '../../support/helpers/dates';
 
 describe('Calendar Overview', () => {
   let adminToken: string;
@@ -70,5 +71,70 @@ describe('Calendar Overview', () => {
     CalendarPage.getRetryButton().click();
     cy.wait('@calOk');
     CalendarPage.getGrid().should('be.visible');
+  });
+
+  it('Admin — /calendar is accessible and grid is visible', () => {
+    cy.clearAllCookies();
+    cy.clearAllLocalStorage();
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+    CalendarPage.visit();
+    CalendarPage.getGrid().should('be.visible');
+  });
+
+  it('two employees with leave on the same day — multiple chips visible', () => {
+    const sameDay = new Date();
+    sameDay.setDate(sameDay.getDate() + 7);
+    const sameDayIso = sameDay.toISOString().split('T')[0];
+
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: sameDayIso,
+      endDate: sameDayIso,
+    }).then((id) => createdIds.push(id));
+
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_NORA_NEWBIE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: sameDayIso,
+      endDate: sameDayIso,
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    CalendarPage.getLeaveChips().should('have.length.at.least', 2);
+  });
+
+  it('month navigation triggers a new API fetch', () => {
+    cy.intercept('GET', '/api/calendar*').as('calFetch');
+    CalendarPage.clickNextMonth();
+    cy.wait('@calFetch');
+    CalendarPage.getGrid().should('be.visible');
+  });
+
+  it('leave chip shows the employee name', () => {
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: isoDate(5),
+      endDate: isoDate(5),
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    CalendarPage.getLeaveChips().first().should('contain.text', EMPLOYEE_EDDIE_EMPLOYEE.name);
+  });
+
+  it('leave chip shows the description when one is provided', () => {
+    const description = 'Beach holiday';
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: isoDate(6),
+      endDate: isoDate(6),
+      description,
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    CalendarPage.getLeaveChips().first().should('contain.text', description);
   });
 });
