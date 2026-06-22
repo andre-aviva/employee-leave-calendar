@@ -47,7 +47,7 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
             .FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider
             ?? throw new InvalidOperationException(
                 "Audit interceptor could not resolve the application service provider.");
-        var occurredAt = services.GetRequiredService<IClock>().Now.ToUniversalTime();
+        var occurredAt = services.GetRequiredService<IClock>().Now;
         var actor = services.GetRequiredService<IAuditActorProvider>().GetCurrent();
 
         foreach (var entry in entries)
@@ -73,6 +73,19 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
         }
     }
 
+    // Free-text fields that may carry sensitive personal data (e.g. a sick-leave reason). Their
+    // content is redacted from the durable, no-FK, append-only trail; the change is still recorded
+    // (so "Notes changed" is visible) but the value never lands verbatim in audit_log.
+    private static readonly HashSet<string> RedactedProperties =
+        new(StringComparer.Ordinal) { nameof(LeaveRegistration.Notes) };
+
+    private const string RedactedMarker = "[redacted]";
+
+    // For a redacted property, replace a present value with the marker; a null value stays null
+    // (nothing to redact, and we don't want to imply content existed).
+    private static object? Mask(string name, object? value) =>
+        RedactedProperties.Contains(name) && value is not null ? RedactedMarker : value;
+
     private static string SerializeChanges(EntityEntry<LeaveRegistration> entry, AuditAction action)
     {
         var changes = new Dictionary<string, object?>();
@@ -82,13 +95,13 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
             switch (action)
             {
                 case AuditAction.Insert:
-                    changes[name] = prop.CurrentValue;
+                    changes[name] = Mask(name, prop.CurrentValue);
                     break;
                 case AuditAction.Delete:
-                    changes[name] = prop.OriginalValue;
+                    changes[name] = Mask(name, prop.OriginalValue);
                     break;
                 case AuditAction.Update when prop.IsModified:
-                    changes[name] = new { old = prop.OriginalValue, @new = prop.CurrentValue };
+                    changes[name] = new { old = Mask(name, prop.OriginalValue), @new = Mask(name, prop.CurrentValue) };
                     break;
             }
         }

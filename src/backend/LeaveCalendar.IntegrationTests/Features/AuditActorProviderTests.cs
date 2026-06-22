@@ -59,4 +59,15 @@ public class AuditActorProviderTests
 
         ProviderFor(ctx).GetCurrent().Should().Be(AuditActor.System);
     }
+
+    [Fact]
+    public void GetCurrent_authenticated_but_missing_name_or_role_returns_System()
+    {
+        var identity = new ClaimsIdentity(
+            [new Claim(JwtClaimNames.Subject, Guid.NewGuid().ToString())], // sub only, no name/role
+            authenticationType: "Test");
+        var ctx = new DefaultHttpContext { User = new ClaimsPrincipal(identity) };
+
+        ProviderFor(ctx).GetCurrent().Should().Be(AuditActor.System);
+    }
 }

@@ -21,8 +21,12 @@ public sealed class AuditActorProvider(IHttpContextAccessor httpContextAccessor)
         if (!Guid.TryParse(user.FindFirstValue(JwtClaimNames.Subject), out var employeeId))
             return AuditActor.System;
 
-        var name = user.FindFirstValue(JwtClaimNames.Name) ?? string.Empty;
-        var role = user.FindFirstValue(JwtClaimNames.Role) ?? string.Empty;
+        var name = user.FindFirstValue(JwtClaimNames.Name);
+        var role = user.FindFirstValue(JwtClaimNames.Role);
+        // A token with a valid 'sub' but missing name/role is partial/untrusted — attribute to
+        // System rather than recording a real employee GUID with a blank name/role.
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(role))
+            return AuditActor.System;
         return new AuditActor(employeeId, name, role);
     }
 }

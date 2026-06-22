@@ -47,6 +47,7 @@ public static class Handler
 
         var rows = await query
             .OrderByDescending(x => x.OccurredAt)
+            .ThenByDescending(x => x.Id)
             .Skip((actualPage - 1) * actualPageSize)
             .Take(actualPageSize)
             .ToListAsync(ct);
@@ -62,7 +63,7 @@ public static class Handler
             x.ActorEmployeeId,
             x.ActorName,
             x.ActorRole,
-            JsonSerializer.Deserialize<JsonElement>(x.Changes))).ToList();
+            JsonSerializer.Deserialize<JsonElement>(string.IsNullOrEmpty(x.Changes) ? "{}" : x.Changes))).ToList();
 
         var result = new PagedResult<AuditEntryDto>(items, actualPage, actualPageSize, totalCount, totalPages);
         return Results.Ok(result);

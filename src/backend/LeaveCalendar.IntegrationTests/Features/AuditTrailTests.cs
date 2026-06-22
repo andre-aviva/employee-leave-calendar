@@ -198,4 +198,24 @@ public class AuditTrailTests(ApiFactory factory) : IntegrationTestBase(factory)
         delete.SubjectEmployeeId.Should().Be(EddieId);
         delete.ActorRole.Should().Be("Employee");
     }
+
+    [Fact]
+    public async Task Notes_content_is_redacted_in_the_audit_change_set()
+    {
+        await Factory.ResetAsync();
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+        const string secret = "diagnosis confidential detail";
+
+        var response = await client.PostAsJsonAsync("/api/admin/leave", new
+        {
+            EmployeeId = EddieId, LeaveTypeId = Vacation,
+            StartDate = "2026-07-01", EndDate = "2026-07-05",
+            Description = (string?)null, Notes = secret
+        });
+        response.EnsureSuccessStatusCode();
+
+        var insert = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Insert);
+        insert.Changes.Should().NotContain(secret);   // verbatim PII never stored
+        insert.Changes.Should().Contain("[redacted]"); // but the field is recorded as present/changed
+    }
 }
