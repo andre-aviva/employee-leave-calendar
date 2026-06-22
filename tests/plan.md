@@ -28,8 +28,8 @@
 | Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, cypress-axe, axe-html-reporter, POM skill |
-| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73, #76–#77) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
-| FR gap fill | **Merged** (#61–#73) — POM getters (#61), nav bar (#71), shared Confirmation Dialog spec (#72), shared LeaveTypeBadge spec (#73), sign-in (#62), security (#63), plan notes (#64), calendar (#65), my-leave (#66), leave-management (#67) |
+| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73, #76–#79; #80–#81 open) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
+| FR gap fill | **Merged** (#61–#73, #76–#79) — POM getters (#61, #76, #80), nav bar (#71), shared Confirmation Dialog spec (#72), shared LeaveTypeBadge spec (#73), sign-in (#62), security (#63), plan notes (#64, #74–#75, #78), calendar (#65, legend in #79), my-leave (#66), leave-management (#67) |
 | Accessibility suite | **Merged PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
 
 ---
@@ -273,7 +273,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Admin can access /calendar and see the calendar grid |
 | Employee, Admin | Two employees with leave on the same day → multiple chips visible |
 | Employee, Admin | Month navigation triggers a new API fetch |
-| Employee, Admin | Leave chip shows the employee name |
+| Employee, Admin | Leave chip shows the employee name (first name or initials per FR — assertion uses first name) |
 | Employee, Admin | Leave chip shows the description when one is provided |
 | Employee, Admin | Leave type legend is visible below the calendar grid |
 | Employee, Admin | Leave type legend lists all four leave types |
@@ -311,6 +311,8 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Employee | Delete — Confirm → registration deleted, table refreshes |
 | Employee | Dates in the leave table display as DD-MM-YYYY |
+| Employee | Duration in days is shown in the Duration column |
+| Employee | Leave table is sorted by start date descending — most recent first |
 | Admin | Admin can register own leave via /my-leave |
 
 ### Leave Management (Admin only)
@@ -338,6 +340,8 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Delete — Confirmation Dialog appears; Cancel closes without deleting |
 | Admin | Delete — Confirm → registration deleted, table refreshes |
 | Admin | Dates in the leave table display as DD-MM-YYYY |
+| Admin | Duration in days is shown in the Duration column |
+| Admin | Leave table is sorted by start date descending — most recent first |
 | Admin | Filter by employee — shows only matching records |
 | Admin | Filter by leave type — shows only matching records |
 | Admin | Filter by date range — shows only records within the range |
@@ -347,6 +351,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Pagination — 20 records per page |
 | Admin | Applying a filter resets pagination to page 1 |
 | Admin | 21+ records — next page button becomes enabled |
+| Admin | Pagination control shows the current page number and updates on navigation |
 | Employee | Navigating to /admin/leave → redirected (route guard) |
 
 ### Security (E2E smoke)
