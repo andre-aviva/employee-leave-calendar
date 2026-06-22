@@ -35,4 +35,41 @@ public class DbSeederTests
         (await db.Employees.CountAsync()).Should().Be(3);
         (await db.LeaveTypes.CountAsync()).Should().Be(4);
     }
+
+    [Fact]
+    public async Task SeedAsync_is_idempotent_across_repeated_runs()
+    {
+        await using var db = NewContext();
+        var hasher = new BCryptPasswordHasher();
+
+        await DbSeeder.SeedAsync(db, hasher, includeDemoUsers: true);
+        await DbSeeder.SeedAsync(db, hasher, includeDemoUsers: true);
+
+        // Insert-if-missing: a second run adds nothing, no duplicates.
+        (await db.LeaveTypes.CountAsync()).Should().Be(4);
+        (await db.Employees.CountAsync()).Should().Be(3);
+    }
+
+    [Fact]
+    public async Task SeedAsync_repairs_a_partially_seeded_set()
+    {
+        await using var db = NewContext();
+        var hasher = new BCryptPasswordHasher();
+
+        await DbSeeder.SeedAsync(db, hasher, includeDemoUsers: true);
+
+        // Simulate a half-seeded state: drop two leave types and one employee.
+        db.LeaveTypes.RemoveRange(await db.LeaveTypes.OrderBy(lt => lt.Name).Take(2).ToListAsync());
+        db.Employees.RemoveRange(await db.Employees.OrderBy(e => e.Name).Take(1).ToListAsync());
+        await db.SaveChangesAsync();
+        (await db.LeaveTypes.CountAsync()).Should().Be(2);
+        (await db.Employees.CountAsync()).Should().Be(2);
+
+        // Re-running converges back to the full intended set — the old Any() guard could not,
+        // because it skips a set that is present-but-incomplete.
+        await DbSeeder.SeedAsync(db, hasher, includeDemoUsers: true);
+
+        (await db.LeaveTypes.CountAsync()).Should().Be(4);
+        (await db.Employees.CountAsync()).Should().Be(3);
+    }
 }
