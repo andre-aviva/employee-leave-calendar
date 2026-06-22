@@ -27,4 +27,32 @@ describe('Navigation Bar', () => {
     NavigationBar.clickSignOut();
     cy.url().should('include', '/sign-in');
   });
+
+  it('application name link navigates to /calendar', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+    cy.visit('/my-leave');
+    NavigationBar.clickAppName();
+    cy.url().should('include', '/calendar');
+  });
+
+  it('nav bar is visible on /my-leave', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+    cy.visit('/my-leave');
+    NavigationBar.getCalendarLink().should('be.visible');
+  });
+
+  it('nav bar is visible on /admin/leave', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+    cy.visit('/admin/leave');
+    NavigationBar.getCalendarLink().should('be.visible');
+  });
+
+  it('Admin — signed-in user name is displayed in the nav bar', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+    NavigationBar.checkUserName(EMPLOYEE_ALICE_ADMIN.name);
+  });
 });
