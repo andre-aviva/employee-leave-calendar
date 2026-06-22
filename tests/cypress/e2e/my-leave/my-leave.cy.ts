@@ -367,12 +367,12 @@ describe('My Leave', () => {
       ConfirmationDialog.getCancelButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CANCEL_LABEL);
     });
 
-    it('clicking the backdrop closes the dialog without deleting', () => {
+    it('clicking the backdrop does NOT close the dialog', () => {
       MyLeavePage.clickDelete(0);
       ConfirmationDialog.checkVisible();
       ConfirmationDialog.clickBackdrop();
-      ConfirmationDialog.checkNotExist();
-      MyLeavePage.checkRowCount(1);
+      ConfirmationDialog.checkVisible();
+      ConfirmationDialog.clickCancel();
     });
   });
 
