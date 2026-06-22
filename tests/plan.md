@@ -20,7 +20,7 @@
 
 ---
 
-## Current state (as of 2026-06-18)
+## Current state (as of 2026-06-22)
 
 | Layer | Status |
 |---|---|
@@ -28,6 +28,7 @@
 | Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, POM skill |
+| E2E specs | **Written and merged** (#41–#46) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
 
 ---
 
@@ -321,7 +322,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 
 - ~~**Bug** [#14](https://github.com/andre-aviva/employee-leave-calendar/issues/14): employee can edit/delete leave starting today~~ — fixed in #19.
 - ~~**Admin slices not yet implemented**~~ — resolved in #12; all four admin slices (`ListAllLeave`, `AdminCreateLeave`, `AdminEditLeave`, `AdminDeleteLeave`) are implemented and integration-tested.
-- **Frontend not yet implemented** — blocks all E2E tests.
+- **Frontend not yet implemented** — blocks all E2E tests. Specs are written and merged; they will run once the frontend serves on `http://localhost:3000` and `data-test` attributes are in place.
 - **Accessibility (cypress-axe)** — AD-QA-1 specifies cypress-axe as the WCAG 2.2 AA accessibility tool. Not yet installed. Add once the frontend is implemented.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
