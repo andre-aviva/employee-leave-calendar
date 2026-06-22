@@ -10,7 +10,7 @@ import {
 import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY } from '../../support/testdata/leaveTypes';
 import { TEXTS } from '../../support/constants';
 import { apiSignIn, apiAdminCreateLeave, apiCleanupAdminLeave } from '../../support/helpers/api';
-import { isoDate } from '../../support/helpers/dates';
+import { isoDate, displayDate } from '../../support/helpers/dates';
 
 describe('Leave Management (Admin only)', () => {
   let adminToken: string;
@@ -128,6 +128,31 @@ describe('Leave Management (Admin only)', () => {
       LeaveForm.get().should('not.exist');
       AdminLeavePage.checkEmptyState();
     });
+
+    it('Admin can create leave with a past start date', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(-14), endDate: isoDate(-12) });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      AdminLeavePage.checkRowCount(1);
+    });
+
+    it('two different employees can have overlapping dates — no overlap error', () => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(10),
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_NORA_NEWBIE.name);
+      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(5), endDate: isoDate(10) });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      AdminLeavePage.checkRowCount(2);
+    });
   });
 
   // ── Edit leave ────────────────────────────────────────────────────────────────
@@ -174,6 +199,34 @@ describe('Leave Management (Admin only)', () => {
       LeaveForm.cancel();
       LeaveForm.get().should('not.exist');
       AdminLeavePage.checkRowCount(1);
+    });
+
+  });
+
+  // ── Edit — overlap validation ─────────────────────────────────────────────────
+
+  describe('edit — overlap validation', () => {
+    it('editing a registration to overlap a different one for the same employee → OVERLAP error', () => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(9),
+      });
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(15),
+        endDate: isoDate(19),
+      });
+      AdminLeavePage.visit();
+      // Edit the second record (later start date — table typically ordered desc) to overlap the first
+      AdminLeavePage.clickEdit(0);
+      LeaveForm.fillStartDate(isoDate(7));
+      LeaveForm.fillEndDate(isoDate(17));
+      LeaveForm.submit();
+      LeaveForm.checkFormError(TEXTS.LEAVE_MANAGEMENT.FORM_OVERLAP_ERROR);
+      LeaveForm.get().should('be.visible');
     });
   });
 
@@ -246,6 +299,41 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.checkRowCount(1);
       AdminLeavePage.getRow(0).should('contain.text', EMPLOYEE_EDDIE_EMPLOYEE.name);
     });
+
+    it('filter by employee with no matching records — shows empty state', () => {
+      AdminLeavePage.filterByEmployee('ZZZ No Such Employee');
+      AdminLeavePage.checkEmptyState();
+    });
+
+    it('filter by multiple leave types — shows only records of those types', () => {
+      AdminLeavePage.filterByType([LEAVE_TYPE_VACATION.name, LEAVE_TYPE_PUBLIC_HOLIDAY.name]);
+      AdminLeavePage.checkRowCount(2);
+    });
+
+    it('changing a filter triggers a new API fetch', () => {
+      cy.intercept('GET', '/api/admin/leave*').as('adminFetch');
+      AdminLeavePage.filterByEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      cy.wait('@adminFetch');
+      AdminLeavePage.checkRowCount(1);
+    });
+  });
+
+  // ── Date formatting ───────────────────────────────────────────────────────────
+
+  describe('date formatting', () => {
+    it('dates in the admin leave table display as DD-MM-YYYY', () => {
+      const startDate = isoDate(5);
+      const endDate = isoDate(7);
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate,
+        endDate,
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getRow(0).should('contain.text', displayDate(startDate));
+      AdminLeavePage.getRow(0).should('contain.text', displayDate(endDate));
+    });
   });
 
   // ── Pagination ────────────────────────────────────────────────────────────────
@@ -254,6 +342,83 @@ describe('Leave Management (Admin only)', () => {
     it('prev button disabled on first page, next disabled when only one page exists', () => {
       AdminLeavePage.getPrevPage().should('be.disabled');
       AdminLeavePage.getNextPage().should('be.disabled');
+    });
+
+    it('21+ records — next page button becomes enabled', () => {
+      const employees = [EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE, EMPLOYEE_ALICE_ADMIN];
+      for (let i = 0; i < 21; i++) {
+        const emp = employees[i % employees.length];
+        apiAdminCreateLeave(adminToken, {
+          employeeId: emp.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(i + 1),
+          endDate: isoDate(i + 1),
+        });
+      }
+      AdminLeavePage.visit();
+      AdminLeavePage.getNextPage().should('not.be.disabled');
+    });
+
+    it('applying a filter resets pagination to page 1', () => {
+      for (let i = 0; i < 21; i++) {
+        apiAdminCreateLeave(adminToken, {
+          employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(i + 1),
+          endDate: isoDate(i + 1),
+        });
+      }
+      AdminLeavePage.visit();
+      AdminLeavePage.getNextPage().click();
+      AdminLeavePage.getPrevPage().should('not.be.disabled');
+      AdminLeavePage.filterByEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      AdminLeavePage.getPrevPage().should('be.disabled');
+    });
+  });
+
+  // ── Confirmation dialog content ───────────────────────────────────────────────
+
+  describe('confirmation dialog content', () => {
+    beforeEach(() => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+      });
+      AdminLeavePage.visit();
+    });
+
+    it('dialog shows correct title, message, and button labels', () => {
+      AdminLeavePage.clickDelete(0);
+      ConfirmationDialog.getTitle().should('contain.text', TEXTS.CONFIRMATION_DIALOG.TITLE);
+      ConfirmationDialog.getMessage().should('contain.text', TEXTS.CONFIRMATION_DIALOG.MESSAGE);
+      ConfirmationDialog.getConfirmButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CONFIRM_LABEL);
+      ConfirmationDialog.getCancelButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CANCEL_LABEL);
+    });
+
+    it('clicking the backdrop closes the dialog without deleting', () => {
+      AdminLeavePage.clickDelete(0);
+      ConfirmationDialog.checkVisible();
+      ConfirmationDialog.clickBackdrop();
+      ConfirmationDialog.checkNotExist();
+      AdminLeavePage.checkRowCount(1);
+    });
+  });
+
+  // ── Leave type badge ──────────────────────────────────────────────────────────
+
+  describe('leave type badge', () => {
+    it('leave type badge is visible in the admin table row', () => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(7),
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getLeaveTypeBadge(0).should('be.visible');
+      AdminLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_VACATION.name);
     });
   });
 
