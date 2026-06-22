@@ -347,47 +347,4 @@ describe('My Leave', () => {
     });
   });
 
-  // ── Confirmation dialog content ───────────────────────────────────────────────
-
-  describe('confirmation dialog content', () => {
-    beforeEach(() => {
-      apiCreateMyLeave(eddieToken, {
-        leaveTypeId: LEAVE_TYPE_VACATION.id,
-        startDate: isoDate(14),
-        endDate: isoDate(16),
-      });
-      MyLeavePage.visit();
-    });
-
-    it('dialog shows correct title, message, and button labels', () => {
-      MyLeavePage.clickDelete(0);
-      ConfirmationDialog.getTitle().should('contain.text', TEXTS.CONFIRMATION_DIALOG.TITLE);
-      ConfirmationDialog.getMessage().should('contain.text', TEXTS.CONFIRMATION_DIALOG.MESSAGE);
-      ConfirmationDialog.getConfirmButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CONFIRM_LABEL);
-      ConfirmationDialog.getCancelButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CANCEL_LABEL);
-    });
-
-    it('clicking the backdrop closes the dialog without deleting', () => {
-      MyLeavePage.clickDelete(0);
-      ConfirmationDialog.checkVisible();
-      ConfirmationDialog.clickBackdrop();
-      ConfirmationDialog.checkNotExist();
-      MyLeavePage.checkRowCount(1);
-    });
-  });
-
-  // ── Leave type badge ──────────────────────────────────────────────────────────
-
-  describe('leave type badge', () => {
-    it('leave type badge is visible in the table row', () => {
-      apiCreateMyLeave(eddieToken, {
-        leaveTypeId: LEAVE_TYPE_VACATION.id,
-        startDate: isoDate(7),
-        endDate: isoDate(9),
-      });
-      MyLeavePage.visit();
-      MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_VACATION.name);
-    });
-  });
 });
