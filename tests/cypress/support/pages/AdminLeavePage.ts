@@ -67,6 +67,14 @@ class AdminLeavePage {
     return cy.get(element('AdminLeave_NextPage'));
   }
 
+  static getPaginationLabel() {
+    return cy.get(element('AdminLeave_PaginationLabel'));
+  }
+
+  static getDurationCell(index: number) {
+    return cy.get(element('AdminLeave_TableRow')).eq(index).find(element('AdminLeave_DurationCell'));
+  }
+
   static clickAddLeave() {
     this.getAddLeaveButton().click();
   }
