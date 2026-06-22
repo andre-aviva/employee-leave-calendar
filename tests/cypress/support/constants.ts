@@ -9,6 +9,7 @@ export const TEXTS = {
   LEAVE_MANAGEMENT: {
     EMPTY_STATE: 'No leave registered',
     ERROR_STATE: 'Something went wrong. Please try again.',
+    FORM_END_DATE_ERROR: 'End date must be on or after the start date',
     FORM_OVERLAP_ERROR: 'This employee already has leave registered for part of this period.',
   },
   CALENDAR: {
