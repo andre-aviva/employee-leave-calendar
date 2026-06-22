@@ -29,7 +29,7 @@ Merged. `tests/plan.md` now contains the correct Nav Bar Admin scenario and all 
 
 ---
 
-### Task 2: Types, date helper, and API helper (shared infrastructure)
+### Task 2: Types, date helper, and API helper (shared infrastructure) ✅ Done — PR #40
 
 **Branch:** `test/e2e-types-and-helpers`
 
@@ -42,7 +42,7 @@ Merged. `tests/plan.md` now contains the correct Nav Bar Admin scenario and all 
 
 Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, and API seeding helper are all shared infrastructure with no user-facing behaviour — splitting them creates a state where the helper exists but nothing uses it.
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -50,7 +50,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   git checkout -b test/e2e-types-and-helpers
   ```
 
-- [ ] **Step 2: Add `id: string` to both interfaces in `types/index.ts`**
+- [x] **Step 2: Add `id: string` to both interfaces in `types/index.ts`**
 
   ```typescript
   export type EmployeeRole = 'Employee' | 'Admin';
@@ -78,7 +78,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   }
   ```
 
-- [ ] **Step 3: Populate IDs in `testdata/leaveTypes.ts`**
+- [x] **Step 3: Populate IDs in `testdata/leaveTypes.ts`**
 
   GUIDs from `src/backend/LeaveCalendar.Web/Infrastructure/Persistence/DbSeeder.cs`.
 
@@ -121,7 +121,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   );
   ```
 
-- [ ] **Step 4: Populate IDs in `testdata/employees.ts`**
+- [x] **Step 4: Populate IDs in `testdata/employees.ts`**
 
   ```typescript
   import type { TestEmployee } from '../types';
@@ -160,7 +160,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   export const STANDARD_EMPLOYEES = ALL_EMPLOYEES.filter((e) => e.role === 'Employee');
   ```
 
-- [ ] **Step 5: Commit the type and testdata changes**
+- [x] **Step 5: Commit the type and testdata changes**
 
   ```bash
   git add tests/cypress/support/types/index.ts \
@@ -169,7 +169,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   git commit -m "test(types): add seeded GUIDs to TestEmployee and TestLeaveType"
   ```
 
-- [ ] **Step 6: Create `helpers/dates.ts`**
+- [x] **Step 6: Create `helpers/dates.ts`**
 
   ```typescript
   export function isoDate(offsetDays = 0): string {
@@ -184,7 +184,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   }
   ```
 
-- [ ] **Step 7: Create `helpers/api.ts`**
+- [x] **Step 7: Create `helpers/api.ts`**
 
   `GET /api/admin/leave` returns a `PagedResult` envelope `{ items: [...] }`. `GET /api/me/leave` returns a plain array. Both are reflected below.
 
@@ -280,7 +280,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   }
   ```
 
-- [ ] **Step 8: Commit the helpers**
+- [x] **Step 8: Commit the helpers**
 
   ```bash
   git add tests/cypress/support/helpers/dates.ts \
@@ -309,14 +309,14 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
 
 ---
 
-### Task 3: Sign In spec
+### Task 3: Sign In spec ✅ Done — PR #41
 
 **Branch:** `test/e2e-sign-in-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/sign-in/sign-in.cy.ts`
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -324,7 +324,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   git checkout -b test/e2e-sign-in-spec
   ```
 
-- [ ] **Step 2: Write `sign-in.cy.ts`**
+- [x] **Step 2: Write `sign-in.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -360,7 +360,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
   });
   ```
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -368,14 +368,14 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
 
   Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/sign-in/sign-in.cy.ts
   git commit -m "test(sign-in): add sign-in E2E spec"
   ```
 
-- [ ] **Step 5: Push, open PR, and squash-merge**
+- [x] **Step 5: Push, open PR, and squash-merge**
 
   ```bash
   git push -u origin test/e2e-sign-in-spec
@@ -388,7 +388,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
 
 ---
 
-### Task 4: Navigation Bar spec
+### Task 4: Navigation Bar spec ✅ Done — PR #42
 
 **Branch:** `test/e2e-nav-bar-spec`
 
@@ -397,7 +397,7 @@ Tasks 2 and 3 from the original plan are merged here: the GUIDs, date utility, a
 
 Per the functional spec (Nav Bar page): My Leave link has **no role restriction**; Leave Management is Admin-only. Admin sees all three links. `NavigationBar.checkAdminLinks()` is already correct.
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -405,7 +405,7 @@ Per the functional spec (Nav Bar page): My Leave link has **no role restriction*
   git checkout -b test/e2e-nav-bar-spec
   ```
 
-- [ ] **Step 2: Write `navigation-bar.cy.ts`**
+- [x] **Step 2: Write `navigation-bar.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -440,7 +440,7 @@ Per the functional spec (Nav Bar page): My Leave link has **no role restriction*
   });
   ```
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -448,14 +448,14 @@ Per the functional spec (Nav Bar page): My Leave link has **no role restriction*
 
   Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/navigation/navigation-bar.cy.ts
   git commit -m "test(nav): add navigation bar E2E spec"
   ```
 
-- [ ] **Step 5: Push, open PR, and squash-merge**
+- [x] **Step 5: Push, open PR, and squash-merge**
 
   ```bash
   git push -u origin test/e2e-nav-bar-spec
@@ -468,7 +468,7 @@ Per the functional spec (Nav Bar page): My Leave link has **no role restriction*
 
 ---
 
-### Task 5: Calendar Overview spec
+### Task 5: Calendar Overview spec ✅ Done — PR #43
 
 **Branch:** `test/e2e-calendar-spec`
 
@@ -477,7 +477,7 @@ Per the functional spec (Nav Bar page): My Leave link has **no role restriction*
 
 The month-boundary test seeds leave via the admin API and cleans up in `afterEach`.
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -485,7 +485,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   git checkout -b test/e2e-calendar-spec
   ```
 
-- [ ] **Step 2: Write `calendar-overview.cy.ts`**
+- [x] **Step 2: Write `calendar-overview.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -564,7 +564,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   });
   ```
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -572,14 +572,14 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
   Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/calendar/calendar-overview.cy.ts
   git commit -m "test(calendar): add calendar overview E2E spec"
   ```
 
-- [ ] **Step 5: Push, open PR, and squash-merge**
+- [x] **Step 5: Push, open PR, and squash-merge**
 
   ```bash
   git push -u origin test/e2e-calendar-spec
@@ -592,7 +592,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
 ---
 
-### Task 6: My Leave spec
+### Task 6: My Leave spec ✅ Done — PR #44
 
 **Branch:** `test/e2e-my-leave-spec`
 
@@ -601,7 +601,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
 `apiCleanupMyLeave` runs in both `beforeEach` (robustness if a previous test failed mid-cleanup) and `afterEach` (immediate tidy-up).
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -609,7 +609,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   git checkout -b test/e2e-my-leave-spec
   ```
 
-- [ ] **Step 2: Write `my-leave.cy.ts`**
+- [x] **Step 2: Write `my-leave.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -899,7 +899,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   });
   ```
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -907,14 +907,14 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
   Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/my-leave/my-leave.cy.ts
   git commit -m "test(my-leave): add My Leave E2E spec"
   ```
 
-- [ ] **Step 5: Push, open PR, and squash-merge**
+- [x] **Step 5: Push, open PR, and squash-merge**
 
   ```bash
   git push -u origin test/e2e-my-leave-spec
@@ -927,7 +927,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
 ---
 
-### Task 7: Leave Management spec
+### Task 7: Leave Management spec ✅ Done — PR #45
 
 **Branch:** `test/e2e-leave-management-spec`
 
@@ -936,7 +936,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 - Modify: `tests/cypress/support/pages/AdminLeavePage.ts` — add `getRetryButton()`
 - Create: `tests/cypress/e2e/leave-management/leave-management.cy.ts`
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -944,7 +944,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   git checkout -b test/e2e-leave-management-spec
   ```
 
-- [ ] **Step 2: Add `FORM_END_DATE_ERROR` to `constants.ts`**
+- [x] **Step 2: Add `FORM_END_DATE_ERROR` to `constants.ts`**
 
   ```typescript
   export const TEXTS = {
@@ -973,7 +973,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   } as const;
   ```
 
-- [ ] **Step 3: Add `getRetryButton()` to `AdminLeavePage.ts`**
+- [x] **Step 3: Add `getRetryButton()` to `AdminLeavePage.ts`**
 
   After `getErrorState()`, add:
 
@@ -983,7 +983,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   }
   ```
 
-- [ ] **Step 4: Commit support file changes**
+- [x] **Step 4: Commit support file changes**
 
   ```bash
   git add tests/cypress/support/constants.ts \
@@ -991,7 +991,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   git commit -m "test(support): add leave management end-date error constant and retry button getter"
   ```
 
-- [ ] **Step 5: Write `leave-management.cy.ts`**
+- [x] **Step 5: Write `leave-management.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -1266,7 +1266,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   });
   ```
 
-- [ ] **Step 6: Run typecheck**
+- [x] **Step 6: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -1274,14 +1274,14 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
   Expected: no errors.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
   ```bash
   git add tests/cypress/e2e/leave-management/leave-management.cy.ts
   git commit -m "test(leave-management): add Leave Management E2E spec"
   ```
 
-- [ ] **Step 8: Push, open PR, and squash-merge**
+- [x] **Step 8: Push, open PR, and squash-merge**
 
   ```bash
   git push -u origin test/e2e-leave-management-spec
@@ -1294,14 +1294,14 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
 ---
 
-### Task 8: Security spec
+### Task 8: Security spec ✅ Done — PR #46
 
 **Branch:** `test/e2e-security-spec`
 
 **Files:**
 - Create: `tests/cypress/e2e/security/security.cy.ts`
 
-- [ ] **Step 1: Branch off main**
+- [x] **Step 1: Branch off main**
 
   ```bash
   git checkout main
@@ -1309,7 +1309,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   git checkout -b test/e2e-security-spec
   ```
 
-- [ ] **Step 2: Write `security.cy.ts`**
+- [x] **Step 2: Write `security.cy.ts`**
 
   ```typescript
   import SignInPage from '../../support/pages/SignInPage';
@@ -1360,7 +1360,7 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
   });
   ```
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
   ```bash
   cd tests && pnpm typecheck
@@ -1368,14 +1368,14 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
   Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
   ```bash
   git add tests/cypress/e2e/security/security.cy.ts
   git commit -m "test(security): add security E2E smoke spec"
   ```
 
-- [ ] **Step 5: Push, open PR, and squash-merge**
+- [x] **Step 5: Push, open PR, and squash-merge**
 
   ```bash
   git push -u origin test/e2e-security-spec
@@ -1390,20 +1390,28 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 
 ## PR sequence summary
 
-| PR | Branch | Contents |
-|---|---|---|
-| ✅ #38 | `docs/e2e-spec-implementation-plan` | plan.md fixes + this plan document |
-| Task 2 | `test/e2e-types-and-helpers` | TestEmployee/TestLeaveType IDs + dates.ts + api.ts |
-| Task 3 | `test/e2e-sign-in-spec` | `sign-in.cy.ts` |
-| Task 4 | `test/e2e-nav-bar-spec` | `navigation-bar.cy.ts` |
-| Task 5 | `test/e2e-calendar-spec` | `calendar-overview.cy.ts` |
-| Task 6 | `test/e2e-my-leave-spec` | `my-leave.cy.ts` |
-| Task 7 | `test/e2e-leave-management-spec` | `leave-management.cy.ts` + constants + AdminLeavePage |
-| Task 8 | `test/e2e-security-spec` | `security.cy.ts` |
+| PR | Branch | Contents | Status |
+|---|---|---|---|
+| #38 | `docs/e2e-spec-implementation-plan` | plan.md fixes + this plan document | ✅ Merged |
+| #40 | `test/e2e-types-and-helpers` | TestEmployee/TestLeaveType IDs + dates.ts + api.ts | ✅ Merged |
+| #41 | `test/e2e-sign-in-spec` | `sign-in.cy.ts` | ✅ Merged |
+| #42 | `test/e2e-nav-bar-spec` | `navigation-bar.cy.ts` | ✅ Merged |
+| #43 | `test/e2e-calendar-spec` | `calendar-overview.cy.ts` | ✅ Merged |
+| #44 | `test/e2e-my-leave-spec` | `my-leave.cy.ts` | ✅ Merged |
+| #45 | `test/e2e-leave-management-spec` | `leave-management.cy.ts` + constants + AdminLeavePage | ✅ Merged |
+| #46 | `test/e2e-security-spec` | `security.cy.ts` | ✅ Merged |
+| #47 | `docs/update-e2e-plan-with-pr-status` | mark all tasks done, add PR numbers and implementation notes | ✅ Merged |
+| #48 | `fix/cleanup-admin-leave-pagination` | fix `apiCleanupAdminLeave` to fetch all pages via `pageSize=1000` | ✅ Merged |
 
 Each task branches off the **merged** `main` from the previous task. Merge Task 2 before starting any spec task — all spec tasks depend on the helpers and IDs it introduces.
 
 ---
+
+## Implementation notes
+
+- **`apiDeleteMyLeave` / `apiAdminDeleteLeave` return type** — the plan had `Cypress.Chainable<void>` with `.then(() => undefined)`. TypeScript rejected this (`Chainable<Response<any>>` is not assignable to `Chainable<void>`). Fix applied: return type changed to `void`, `cy.request(...)` called without returning it. Cleanup callers (`apiCleanupMyLeave`, `apiCleanupAdminLeave`) are unaffected since they never use the return value.
+- **Security spec cleanup** — `apiDeleteMyLeave` is called inside `cy.then(...)` to ensure Nora's token and leave ID are populated before the DELETE fires.
+- **All specs typecheck-clean** — verified with `pnpm typecheck` in `tests/` before each PR was opened.
 
 ## Known limitations
 
@@ -1411,4 +1419,4 @@ Each task branches off the **merged** `main` from the previous task. Merge Task 
 - **Timezone edge case** — `isoDate()` uses the test runner's local system date. Tests asserting "today" behaviour may behave unexpectedly near midnight Europe/Amsterdam time.
 - **TYPE_NOT_REGISTERABLE error text** — exact UI message comes from the frontend resource file; the Public Holiday test in Task 6 does not assert the text yet. Add the assertion to `TEXTS` once the frontend is implemented.
 - **AdminLeavePage `getRetryButton()`** — added in Task 7 with selector `AdminLeave_RetryButton`. Verify the `data-test` value against the rendered HTML once the frontend is built.
-- **`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20). If a test creates more than 20 records, extend the helper to iterate pages.
+- ~~**`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20).~~ Fixed in PR #48: `pageSize=1000` query param added so all records are fetched in one request.
