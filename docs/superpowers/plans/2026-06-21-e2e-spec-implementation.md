@@ -1402,6 +1402,8 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 | #46 | `test/e2e-security-spec` | `security.cy.ts` | ✅ Merged |
 | #47 | `docs/update-e2e-plan-with-pr-status` | mark all tasks done, add PR numbers and implementation notes | ✅ Merged |
 | #48 | `fix/cleanup-admin-leave-pagination` | fix `apiCleanupAdminLeave` to fetch all pages via `pageSize=1000` | ✅ Merged |
+| #58 | `fix/cleanup-helper-pagesize-and-plan-notes` | fix `apiCleanupAdminLeave` pageSize to 100 (server max) + document `includeDemoUsers` risk in `plan.md` | Awaiting review |
+| #59 | `test/e2e-a11y-spec` | cypress-axe + axe-html-reporter setup, WCAG 2.2 AA spec for all 4 pages, `mocha/no-mocha-arrows` ESLint fix | Open |
 
 Each task branches off the **merged** `main` from the previous task. Merge Task 2 before starting any spec task — all spec tasks depend on the helpers and IDs it introduces.
 
@@ -1420,3 +1422,5 @@ Each task branches off the **merged** `main` from the previous task. Merge Task 
 - **TYPE_NOT_REGISTERABLE error text** — exact UI message comes from the frontend resource file; the Public Holiday test in Task 6 does not assert the text yet. Add the assertion to `TEXTS` once the frontend is implemented.
 - **AdminLeavePage `getRetryButton()`** — added in Task 7 with selector `AdminLeave_RetryButton`. Verify the `data-test` value against the rendered HTML once the frontend is built.
 - ~~**`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20).~~ Fixed in PR #48: `pageSize=1000` query param added so all records are fetched in one request.
+- **`includeDemoUsers` requirement** — since PR #39, DbSeeder only seeds Alice/Eddie/Nora when `DbSeeder__IncludeDemoUsers=true` (or equivalent) is set in the environment. If the E2E target environment boots without it, all specs will fail at sign-in. Tracked in PR #58.
+- **Accessibility spec (PR #59)** — `cypress/reports/a11y/a11y-report.html` is written on any `cy.checkA11y()` failure; the directory is gitignored. The spec will not pass until the frontend is implemented (same constraint as all other specs).

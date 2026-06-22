@@ -1,5 +1,6 @@
 import { defineConfig } from 'cypress';
 import installLogsPrinter from 'cypress-terminal-report/src/installLogsPrinter';
+import { createHtmlReport } from 'axe-html-reporter';
 
 export default defineConfig({
   chromeWebSecurity: false,
@@ -19,6 +20,15 @@ export default defineConfig({
         if (browser.family === 'chromium' && browser.name !== 'electron') {
           launchOptions.args.push('--js-flags=--max-old-space-size=4096');
         }
+      });
+      on('task', {
+        generateA11yReport(violations: import('axe-core').Result[]) {
+          createHtmlReport({
+            results: { violations },
+            options: { outputDir: 'cypress/reports/a11y', reportFileName: 'a11y-report.html' },
+          });
+          return null;
+        },
       });
     },
   },

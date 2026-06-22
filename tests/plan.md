@@ -27,8 +27,9 @@
 | Backend: SignIn, GetCurrentUser, ListLeaveTypes, ListEmployees, ViewCalendar, ListMyLeave, RegisterMyLeave, EditMyLeave, DeleteMyLeave | Done |
 | Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
-| Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, POM skill |
+| Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, cypress-axe, axe-html-reporter, POM skill |
 | E2E specs | **Written and merged** (#41–#46) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
+| Accessibility suite | **Open PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
 
 ---
 
