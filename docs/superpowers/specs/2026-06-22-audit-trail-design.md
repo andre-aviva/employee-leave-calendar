@@ -49,6 +49,7 @@ This spec covers the **audit trail only**. The broader GDPR data-subject work
 | D6 | **Changes granularity:** changed-columns-only (old→new) for updates; full column set for inserts/deletes | Read straight from the change tracker (`PropertyEntry.IsModified`, `OriginalValue`/`CurrentValue`). Compact and fully reconstructable. |
 | D7 | **Atomicity: audit row commits in the same transaction as the mutation** | No unaudited writes and no orphan audit rows — a failed audit write rolls back the mutation. |
 | D8 | **Non-request writes stamp a `System` sentinel actor** | Any `LeaveRegistration` write with no authenticated HTTP context — startup paths, or test data seeded directly via the `DbContext` — has no principal; `IAuditActorProvider` reads claims directly and falls back to `System` rather than throwing. (The production seeder writes only `LeaveType`/`Employee`, so it produces no leave-audit rows; the path is real but is exercised mainly by direct-DbContext test seeding.) |
+| D9 | **Redact free-text `Notes` from the stored change set** (added during whole-branch review) | `Notes` is unconstrained free text that can hold sensitive personal data (e.g. a sick-leave reason). Since `audit_log` is append-only, FK-free, and deliberately outlives the registration, capturing `Notes` verbatim would retain that data **indefinitely**, in direct tension with the GDPR §8.1 purpose of this very feature and the erasure work deferred to Round 2. So the interceptor records that `Notes` *changed* but masks its value to `"[redacted]"` (a null stays null); every other field — `Description`, dates, type, ids — is kept verbatim for "what changed to what". This minimises durable PII while preserving the trail's forensic value. (`Description` is ≤50 chars and kept; revisit if it proves to carry sensitive content.) |
 
 ### Screaming-architecture note
 An interceptor is cross-cutting, so *capture* is **invisible at the individual `Handler.cs`**
@@ -147,7 +148,7 @@ So the audit columns below are the EF-default PascalCase names.
 | `ActorEmployeeId` | `Guid?` | uuid null | who acted; `null` for the `System` sentinel |
 | `ActorName` | `string` | varchar(200) | actor display name, or `"System"` |
 | `ActorRole` | `string` | varchar(50) | actor role, or `"System"` |
-| `Changes` | `string` | jsonb | change set serialized to JSON: changed columns (old→new) for updates; full column set for insert/delete |
+| `Changes` | `string` | jsonb | change set serialized to JSON: changed columns (old→new) for updates; full column set for insert/delete. **`Notes` is masked to `"[redacted]"`** (D9) — its content is never stored. |
 
 - **Index:** `(SubjectEmployeeId, OccurredAt)` to serve the read endpoint's primary filter+sort.
 - **No foreign keys.** `EntityId`/`SubjectEmployeeId`/`ActorEmployeeId` are plain `uuid`
