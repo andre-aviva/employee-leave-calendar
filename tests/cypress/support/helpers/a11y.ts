@@ -8,4 +8,5 @@ export function logA11yViolations(violations: Result[]): void {
       cy.log(`  HTML: ${html}`);
     });
   });
+  cy.task('generateA11yReport', violations);
 }
