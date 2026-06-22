@@ -29,7 +29,8 @@
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, cypress-axe, axe-html-reporter, POM skill |
 | E2E specs | **Written and merged** (#41–#46) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
-| Accessibility suite | **Open PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
+| FR gap fill | **Open PR #60** — adds empty credentials, root redirect, app name link, multi-chip, admin on /calendar, edit pre-fill, dialog content/backdrop, leave type badge, past-date admin create, per-employee overlap isolation, filter empty state, multi-type filter, filter triggers fetch, filter resets page, 21+ pagination, edit-to-overlap, post-sign-out redirect |
+| Accessibility suite | **Merged PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
 
 ---
 
@@ -328,3 +329,57 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
 - `cypress.config.ts` baseUrl is `http://localhost:3000` (placeholder — update once dev server port is confirmed).
+
+---
+
+## Scenarios for future discussion (not yet FR-backed)
+
+The following gaps were identified during gap analysis but are **not** in the functional requirements. They come from the Design System, Architecture spec (arc42), or inferred UX behaviour. Discuss with the team before writing E2E tests for these.
+
+### Feedback Patterns (Design System)
+
+| Scenario | Source |
+|---|---|
+| Field validation errors appear on blur (after leaving a field), not on every keystroke | Feedback Patterns |
+| Submit triggers simultaneous validation on all invalid fields | Feedback Patterns |
+| Table loads with skeleton rows (not a spinner) while data is fetching | Feedback Patterns |
+| Calendar loads with skeleton cells while data is fetching | Feedback Patterns |
+| After a successful leave registration, a green success toast appears top-right and auto-dismisses after 4 seconds | Feedback Patterns |
+| Success toast also has a manual dismiss (×) button | Feedback Patterns |
+| Submit button shows spinner and becomes non-interactive during async submission | Component Library |
+
+### Error handling — mutations (arc42 / Architecture spec)
+
+| Scenario | Source |
+|---|---|
+| POST /api/me/leave returns 500 → form-level error shown, form stays open | arc42 §8 |
+| PUT /api/me/leave/{id} returns 500 → form-level error shown, form stays open | arc42 §8 |
+| DELETE /api/me/leave/{id} returns 500 → inline error in table or toast | arc42 §8 |
+| POST /api/admin/leave returns 500 → form-level error | arc42 §8 |
+| PUT /api/admin/leave/{id} returns 500 → form-level error | arc42 §8 |
+| DELETE /api/admin/leave/{id} returns 500 → inline error or toast | arc42 §8 |
+| Session expires mid-session (401 on any request) → redirected to /sign-in | arc42 §8 |
+
+### Page layout details (Design System — Page Layouts)
+
+| Scenario | Source |
+|---|---|
+| "Request Leave" button on /calendar is visible to Employee, absent for Admin | Page Layouts |
+| Each page has the correct `<h1>` title per the Page Layouts spec | Page Layouts |
+| Admin edit/delete visibility on past records — FR says buttons hidden on past records; verify this also applies on Leave Management admin view or only on My Leave | Page Layouts discrepancy |
+
+### Component Library behaviours
+
+| Scenario | Source |
+|---|---|
+| Filter reset button clears all filters and reloads the full dataset | Component Library |
+| Select (leave type dropdown) placeholder is enforced client-side — submitting without a selection shows a field error | Component Library |
+| Table column sort — clicking a column header toggles sort direction | Component Library |
+| Chip overflow indicator — when a calendar day cell has more chips than it can display, an overflow indicator ("+N more") is shown | Component Library |
+
+### Accessibility (beyond WCAG axe scan)
+
+| Scenario | Source |
+|---|---|
+| Tab order on Sign In follows a logical sequence: username → password → submit | Accessibility page |
+| Confirmation Dialog traps keyboard focus while open (Tab cycles within dialog) | Accessibility page |
