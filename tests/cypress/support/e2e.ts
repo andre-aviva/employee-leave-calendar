@@ -1,5 +1,6 @@
 import 'cypress-real-events';
 import 'cypress-terminal-report/src/installLogsCollector';
+import 'cypress-axe';
 import './commands';
 
 const ALLOWED_UNCAUGHT_EXCEPTION_MESSAGES: RegExp[] = [/ResizeObserver loop/];

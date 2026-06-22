@@ -11,9 +11,15 @@ devDependencies:
   '@types/node':
     specifier: ^20.19.43
     version: 20.19.43
+  axe-core:
+    specifier: 4.12.1
+    version: 4.12.1
   cypress:
     specifier: ^15.17.0
     version: 15.17.0
+  cypress-axe:
+    specifier: 1.7.0
+    version: 1.7.0(axe-core@4.12.1)(cypress@15.17.0)
   cypress-real-events:
     specifier: ^1.15.0
     version: 1.15.0(cypress@15.17.0)
@@ -429,6 +435,11 @@ packages:
     resolution: {integrity: sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==}
     dev: true
 
+  /axe-core@4.12.1:
+    resolution: {integrity: sha512-s7iGf5GaVMxEG0ENN9x+xTr7GFZCb1ZP/1uATUpCEK2X78nDB3RwbtFCo9pGAf9ru+VwoQ464DkaLEeRM08wJA==}
+    engines: {node: '>=4'}
+    dev: true
+
   /balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -582,6 +593,17 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+    dev: true
+
+  /cypress-axe@1.7.0(axe-core@4.12.1)(cypress@15.17.0):
+    resolution: {integrity: sha512-zzJpvAAjauEB3GZl0KYXb8i3w6MztWAt2WM3czYTFyNVC30alDmqCm9E7GwZ4bgkldZJlmHakaVEyu73R5St4w==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      axe-core: ^3 || ^4
+      cypress: ^10 || ^11 || ^12 || ^13 || ^14 || ^15
+    dependencies:
+      axe-core: 4.12.1
+      cypress: 15.17.0
     dev: true
 
   /cypress-real-events@1.15.0(cypress@15.17.0):
