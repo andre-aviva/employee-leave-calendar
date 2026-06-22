@@ -12,6 +12,7 @@ export default tseslint.config(
   {
     rules: {
       'mocha/consistent-spacing-between-blocks': 'error',
+      'mocha/no-mocha-arrows': 'off',
     },
   },
   prettierConfig,
