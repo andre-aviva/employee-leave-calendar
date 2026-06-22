@@ -171,14 +171,16 @@ Signed-in user name displayed on the right alongside the sign-out control.
 
 **My Leave** (`/my-leave`):
 - "Request Leave" button top-right
-- FilterBar: Type | Status | Year | Reset
-- Table columns: Leave Type, Start Date, End Date, Days, Status, Actions
-- Actions column: edit/delete (functional spec) only visible on future-dated registrations
+- FilterBar: Type | Status | Year | Reset *(Design System — not in FR)*
+- Table columns (FR): Leave Type, From, To, Duration (days), Description, Actions
+- Notes shown as tooltip on row hover when notes have been provided
+- Actions column: edit/delete only visible on future-dated registrations
 
 **Leave Management** (`/admin/leave`):
 - Add leave button top-right above table
-- FilterBar: Employee (searchable dropdown) | Type | Status | Date range (From/To) | Reset
-- Table columns: Employee, Leave Type, Start Date, End Date, Days, Status, Actions
+- FilterBar: Employee (searchable dropdown) | Leave type (multi-select) | Date range From/To
+- Table columns (FR): Employee, Leave Type, From, To, Duration (days), Description, Actions
+- Notes shown as tooltip on row hover when notes have been provided
 - Changing a filter resets the table to page 1; 20 records per page
 
 ---
@@ -197,8 +199,8 @@ The items below appear in the Design System (Page Layouts / Feedback Patterns) b
 | Leave type colours | Each leave type has a colour (chip + badge) | `colour` removed from `TestLeaveType` and test data — add back once design finalises the hex values |
 | My Leave — FilterBar | Filters: Type \| Status \| Year \| Reset | No filter methods in `MyLeavePage`; functional spec has no filters on My Leave |
 | My Leave — Pagination | Paginated table (same pattern as Leave Management) | No pagination getters in `MyLeavePage`; functional spec has no pagination on My Leave |
-| My Leave — Status column | Table columns include Status; Description column removed | `MyLeavePage` POM reflects functional spec columns (no Status) |
-| Leave Management — Status column | Table columns include Status; Description column removed | `AdminLeavePage` POM reflects functional spec columns (no Status) |
+| My Leave — Status column | Table columns include Status; Description column removed | `MyLeavePage` POM reflects FR columns (Description, no Status) |
+| Leave Management — Status column | Table columns include Status; Description column removed | `AdminLeavePage` POM reflects FR columns (Description, no Status) |
 | Leave Type field error | `TYPE_NOT_REGISTERABLE` → "This leave type cannot be requested." below Leave Type field | `getLeaveTypeError()` removed from `LeaveForm` — add back if Design System is adopted |
 | Sign In — field name | Design System: "Email field"; functional spec implies username | `SignIn_UsernameInput` selector may need renaming to `SignIn_EmailInput` |
 
@@ -293,6 +295,9 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Employee | Edit and delete NOT visible when start date is today (today is the boundary — FR §3) |
 | Employee | Leave registration form has no Employee selector |
 | Employee | Public Holiday not available in the Employee leave type dropdown |
+| Employee | Register — description filled in the form → description appears in the table row |
+| Employee | Register — description filled in the form → description appears in the calendar chip |
+| Employee | Register — notes filled in the form → notes appear as tooltip on row hover |
 | Employee | Edit — happy path (future registration) → form closes, table refreshes |
 | Employee | Edit — form is pre-populated with existing leave type, start date, and end date |
 | Employee | Edit — form has no Employee selector |
@@ -312,6 +317,8 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Empty state shown when no records match active filters |
 | Admin | Error state — retry button reloads data |
 | Admin | Create leave for any employee, any leave type including Public Holiday → table refreshes |
+| Admin | Create — description filled in the form → description appears in the table row |
+| Admin | Create — notes filled in the form → notes appear as tooltip on row hover |
 | Admin | Create — no start date restriction; past dates accepted |
 | Admin | Create — two different employees can have overlapping dates (overlap is per-employee) |
 | Admin | Create — end date before start date → END_DATE_ERROR below End Date field |
