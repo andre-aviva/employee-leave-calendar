@@ -37,6 +37,14 @@ class CalendarPage {
     return cy.get(element('CalendarPage_RetryButton'));
   }
 
+  static getLegend() {
+    return cy.get(element('CalendarPage_Legend'));
+  }
+
+  static getLegendItem(leaveTypeName: string) {
+    return this.getLegend().contains(leaveTypeName);
+  }
+
   static clickPrevMonth() {
     this.getPrevButton().click();
   }
