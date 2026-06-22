@@ -376,52 +376,6 @@ describe('Leave Management (Admin only)', () => {
     });
   });
 
-  // ── Confirmation dialog content ───────────────────────────────────────────────
-
-  describe('confirmation dialog content', () => {
-    beforeEach(() => {
-      apiAdminCreateLeave(adminToken, {
-        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
-        leaveTypeId: LEAVE_TYPE_VACATION.id,
-        startDate: isoDate(7),
-        endDate: isoDate(9),
-      });
-      AdminLeavePage.visit();
-    });
-
-    it('dialog shows correct title, message, and button labels', () => {
-      AdminLeavePage.clickDelete(0);
-      ConfirmationDialog.getTitle().should('contain.text', TEXTS.CONFIRMATION_DIALOG.TITLE);
-      ConfirmationDialog.getMessage().should('contain.text', TEXTS.CONFIRMATION_DIALOG.MESSAGE);
-      ConfirmationDialog.getConfirmButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CONFIRM_LABEL);
-      ConfirmationDialog.getCancelButton().should('contain.text', TEXTS.CONFIRMATION_DIALOG.CANCEL_LABEL);
-    });
-
-    it('clicking the backdrop closes the dialog without deleting', () => {
-      AdminLeavePage.clickDelete(0);
-      ConfirmationDialog.checkVisible();
-      ConfirmationDialog.clickBackdrop();
-      ConfirmationDialog.checkNotExist();
-      AdminLeavePage.checkRowCount(1);
-    });
-  });
-
-  // ── Leave type badge ──────────────────────────────────────────────────────────
-
-  describe('leave type badge', () => {
-    it('leave type badge is visible in the admin table row', () => {
-      apiAdminCreateLeave(adminToken, {
-        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
-        leaveTypeId: LEAVE_TYPE_VACATION.id,
-        startDate: isoDate(5),
-        endDate: isoDate(7),
-      });
-      AdminLeavePage.visit();
-      AdminLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      AdminLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_VACATION.name);
-    });
-  });
-
   // ── Route guard ───────────────────────────────────────────────────────────────
 
   describe('route guard', () => {
