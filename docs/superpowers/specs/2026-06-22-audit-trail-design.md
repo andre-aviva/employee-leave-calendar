@@ -132,21 +132,27 @@ Migrations/
 
 ## 5. Data model
 
-Table `audit_log` (English snake_case, consistent with the existing schema):
+Table `audit_log`. **Naming convention** matches the existing schema: snake_case *table*
+names but EF-default **PascalCase columns** (e.g. the live schema has
+`leave_registrations."EmployeeId"`, and check constraints quote `"Role"` / `"RegisterableBy"`).
+So the audit columns below are the EF-default PascalCase names.
 
-| column | type | notes |
-|---|---|---|
-| `id` | uuid | PK |
-| `occurred_at` | timestamptz | from `IClock.Now` |
-| `action` | text | `Insert` / `Update` / `Delete` (DB check constraint, per the project's enum-constraint convention) |
-| `entity_id` | uuid | the affected `LeaveRegistration.Id` |
-| `subject_employee_id` | uuid | whose leave it is (`LeaveRegistration.EmployeeId`) |
-| `actor_employee_id` | uuid (nullable) | who acted; `null` for the `System` sentinel |
-| `actor_name` | text | actor display name, or `"System"` |
-| `actor_role` | text | actor role, or `"System"` |
-| `changes` | jsonb | change set serialized to JSON: changed columns (old→new) for updates; full column set for insert/delete |
+| column | .NET type | DB type | notes |
+|---|---|---|---|
+| `Id` | `Guid` | uuid | PK |
+| `OccurredAt` | `DateTimeOffset` | timestamptz | from `IClock.Now` |
+| `Action` | `AuditAction` enum | varchar(20) | `Insert`/`Update`/`Delete`, stored via `HasConversion<string>()` + a `CK_audit_log_Action` check constraint — same pattern as `Role`/`RegisterableBy` |
+| `EntityId` | `Guid` | uuid | the affected `LeaveRegistration.Id` |
+| `SubjectEmployeeId` | `Guid` | uuid | whose leave it is (`LeaveRegistration.EmployeeId`) |
+| `ActorEmployeeId` | `Guid?` | uuid null | who acted; `null` for the `System` sentinel |
+| `ActorName` | `string` | varchar(200) | actor display name, or `"System"` |
+| `ActorRole` | `string` | varchar(50) | actor role, or `"System"` |
+| `Changes` | `string` | jsonb | change set serialized to JSON: changed columns (old→new) for updates; full column set for insert/delete |
 
-- **Index:** `(subject_employee_id, occurred_at)` to serve the read endpoint's primary filter+sort.
+- **Index:** `(SubjectEmployeeId, OccurredAt)` to serve the read endpoint's primary filter+sort.
+- **No foreign keys.** `EntityId`/`SubjectEmployeeId`/`ActorEmployeeId` are plain `uuid`
+  columns, deliberately *not* FKs — an audit row must outlive the registration or employee it
+  refers to (a deleted registration still has a durable trail).
 - **Append-only:** enforced at the application layer (no update/delete code paths). A DB-level
   guard (revoke `UPDATE`/`DELETE`, or a trigger) is noted as optional future hardening.
 
