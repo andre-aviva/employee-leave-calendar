@@ -1,4 +1,5 @@
 import SignInPage from '../../support/pages/SignInPage';
+import NavigationBar from '../../support/pages/NavigationBar';
 import MyLeavePage from '../../support/pages/MyLeavePage';
 import { EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
@@ -45,5 +46,17 @@ describe('Security (E2E smoke)', () => {
     SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
     MyLeavePage.visit();
     MyLeavePage.checkEmptyState();
+  });
+
+  it('after sign-out — all protected routes redirect to /sign-in', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+    NavigationBar.clickSignOut();
+    cy.url().should('include', '/sign-in');
+
+    ['/calendar', '/my-leave', '/admin/leave'].forEach((route) => {
+      cy.visit(route);
+      cy.url().should('include', '/sign-in');
+    });
   });
 });
