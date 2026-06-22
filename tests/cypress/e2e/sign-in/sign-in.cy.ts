@@ -28,4 +28,29 @@ describe('Sign In', () => {
     cy.visit('/my-leave');
     cy.url().should('include', '/sign-in');
   });
+
+  it('empty username — error shown', () => {
+    SignInPage.fillPassword(EMPLOYEE_EDDIE_EMPLOYEE.password);
+    SignInPage.submit();
+    SignInPage.checkErrorVisible();
+    cy.url().should('include', '/sign-in');
+  });
+
+  it('empty password — error shown', () => {
+    SignInPage.fillUsername(EMPLOYEE_EDDIE_EMPLOYEE.username);
+    SignInPage.submit();
+    SignInPage.checkErrorVisible();
+    cy.url().should('include', '/sign-in');
+  });
+
+  it('unauthenticated — navigating to / redirects to /sign-in', () => {
+    cy.visit('/');
+    cy.url().should('include', '/sign-in');
+  });
+
+  it('authenticated — navigating to / redirects to /calendar', () => {
+    SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+    cy.visit('/');
+    cy.url().should('include', '/calendar');
+  });
 });
