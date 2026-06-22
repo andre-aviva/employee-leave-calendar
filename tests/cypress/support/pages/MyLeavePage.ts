@@ -79,6 +79,10 @@ class MyLeavePage {
       .should('not.exist');
   }
 
+  static getLeaveTypeBadge(index: number) {
+    return cy.get(element('MyLeave_TableRow')).eq(index).find(element('LeaveTypeBadge'));
+  }
+
 }
 
 export default MyLeavePage;

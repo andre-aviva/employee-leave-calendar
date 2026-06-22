@@ -52,6 +52,14 @@ class NavigationBar {
   static clickSignOut() {
     this.getSignOutButton().click();
   }
+
+  static getAppName() {
+    return cy.get(element('NavBar_AppName'));
+  }
+
+  static clickAppName() {
+    this.getAppName().click();
+  }
 }
 
 export default NavigationBar;

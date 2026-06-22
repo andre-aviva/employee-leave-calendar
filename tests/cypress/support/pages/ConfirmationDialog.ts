@@ -36,6 +36,10 @@ class ConfirmationDialog {
   static clickCancel() {
     this.getCancelButton().click();
   }
+
+  static clickBackdrop() {
+    cy.get(element('ConfirmationDialog_Backdrop')).click({ force: true });
+  }
 }
 
 export default ConfirmationDialog;
