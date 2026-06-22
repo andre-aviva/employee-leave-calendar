@@ -3,6 +3,7 @@ import CalendarPage from '../../support/pages/CalendarPage';
 import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
 import { apiSignIn, apiAdminCreateLeave, apiAdminDeleteLeave } from '../../support/helpers/api';
+import { isoDate } from '../../support/helpers/dates';
 
 describe('Calendar Overview', () => {
   let adminToken: string;
@@ -115,11 +116,25 @@ describe('Calendar Overview', () => {
     apiAdminCreateLeave(adminToken, {
       employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
       leaveTypeId: LEAVE_TYPE_VACATION.id,
-      startDate: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0],
-      endDate: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0],
+      startDate: isoDate(5),
+      endDate: isoDate(5),
     }).then((id) => createdIds.push(id));
 
     CalendarPage.visit();
     CalendarPage.getLeaveChips().first().should('contain.text', EMPLOYEE_EDDIE_EMPLOYEE.name);
+  });
+
+  it('leave chip shows the description when one is provided', () => {
+    const description = 'Beach holiday';
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: isoDate(6),
+      endDate: isoDate(6),
+      description,
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    CalendarPage.getLeaveChips().first().should('contain.text', description);
   });
 });
