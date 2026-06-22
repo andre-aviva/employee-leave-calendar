@@ -1394,12 +1394,14 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 |---|---|---|---|
 | #38 | `docs/e2e-spec-implementation-plan` | plan.md fixes + this plan document | ✅ Merged |
 | #40 | `test/e2e-types-and-helpers` | TestEmployee/TestLeaveType IDs + dates.ts + api.ts | ✅ Merged |
-| #41 | `test/e2e-sign-in-spec` | `sign-in.cy.ts` | Open |
-| #42 | `test/e2e-nav-bar-spec` | `navigation-bar.cy.ts` | Open |
-| #43 | `test/e2e-calendar-spec` | `calendar-overview.cy.ts` | Open |
-| #44 | `test/e2e-my-leave-spec` | `my-leave.cy.ts` | Open |
-| #45 | `test/e2e-leave-management-spec` | `leave-management.cy.ts` + constants + AdminLeavePage | Open |
-| #46 | `test/e2e-security-spec` | `security.cy.ts` | Open |
+| #41 | `test/e2e-sign-in-spec` | `sign-in.cy.ts` | ✅ Merged |
+| #42 | `test/e2e-nav-bar-spec` | `navigation-bar.cy.ts` | ✅ Merged |
+| #43 | `test/e2e-calendar-spec` | `calendar-overview.cy.ts` | ✅ Merged |
+| #44 | `test/e2e-my-leave-spec` | `my-leave.cy.ts` | ✅ Merged |
+| #45 | `test/e2e-leave-management-spec` | `leave-management.cy.ts` + constants + AdminLeavePage | ✅ Merged |
+| #46 | `test/e2e-security-spec` | `security.cy.ts` | ✅ Merged |
+| #47 | `docs/update-e2e-plan-with-pr-status` | mark all tasks done, add PR numbers and implementation notes | ✅ Merged |
+| #48 | `fix/cleanup-admin-leave-pagination` | fix `apiCleanupAdminLeave` to fetch all pages via `pageSize=1000` | ✅ Merged |
 
 Each task branches off the **merged** `main` from the previous task. Merge Task 2 before starting any spec task — all spec tasks depend on the helpers and IDs it introduces.
 
@@ -1417,4 +1419,4 @@ Each task branches off the **merged** `main` from the previous task. Merge Task 
 - **Timezone edge case** — `isoDate()` uses the test runner's local system date. Tests asserting "today" behaviour may behave unexpectedly near midnight Europe/Amsterdam time.
 - **TYPE_NOT_REGISTERABLE error text** — exact UI message comes from the frontend resource file; the Public Holiday test in Task 6 does not assert the text yet. Add the assertion to `TEXTS` once the frontend is implemented.
 - **AdminLeavePage `getRetryButton()`** — added in Task 7 with selector `AdminLeave_RetryButton`. Verify the `data-test` value against the rendered HTML once the frontend is built.
-- **`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20). If a test creates more than 20 records, extend the helper to iterate pages.
+- ~~**`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20).~~ Fixed in PR #48: `pageSize=1000` query param added so all records are fetched in one request.
