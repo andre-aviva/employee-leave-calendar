@@ -103,6 +103,10 @@ class AdminLeavePage {
   static checkRowCount(n: number) {
     this.getTableRows().should('have.length', n);
   }
+
+  static getLeaveTypeBadge(index: number) {
+    return cy.get(element('AdminLeave_TableRow')).eq(index).find(element('LeaveTypeBadge'));
+  }
 }
 
 export default AdminLeavePage;
