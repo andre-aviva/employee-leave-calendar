@@ -110,4 +110,88 @@ public class AuditTrailTests(ApiFactory factory) : IntegrationTestBase(factory)
         (await db.LeaveRegistrations.CountAsync()).Should().Be(1);  // only A
         (await db.AuditLog.CountAsync()).Should().Be(1);            // only A's Insert; B's rolled back
     }
+
+    [Fact]
+    public async Task AdminCreate_records_an_Insert_attributed_to_the_admin()
+    {
+        await Factory.ResetAsync();
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+
+        var response = await client.PostAsJsonAsync("/api/admin/leave", new
+        {
+            EmployeeId = EddieId, LeaveTypeId = Vacation,
+            StartDate = "2026-07-01", EndDate = "2026-07-05", Description = (string?)null, Notes = (string?)null
+        });
+        response.EnsureSuccessStatusCode();
+
+        var insert = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Insert);
+        insert.SubjectEmployeeId.Should().Be(EddieId);
+        insert.ActorEmployeeId.Should().Be(AdminId);
+    }
+
+    [Fact]
+    public async Task AdminDelete_records_a_Delete_attributed_to_the_admin()
+    {
+        await Factory.ResetAsync();
+        var regId = await SeedRegistrationAsync(EddieId, new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 5));
+        var client = await Factory.AuthenticatedClientAsync("admin", "Admin!123");
+
+        var response = await client.DeleteAsync($"/api/admin/leave/{regId}");
+        response.EnsureSuccessStatusCode();
+
+        var delete = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Delete);
+        delete.EntityId.Should().Be(regId);
+        delete.SubjectEmployeeId.Should().Be(EddieId);
+        delete.ActorEmployeeId.Should().Be(AdminId);
+    }
+
+    [Fact]
+    public async Task SelfRegister_records_an_Insert_where_actor_equals_subject()
+    {
+        await Factory.ResetAsync();
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        var response = await client.PostAsJsonAsync("/api/me/leave", new
+        {
+            LeaveTypeId = Vacation, StartDate = "2026-07-01", EndDate = "2026-07-05",
+            Description = (string?)null, Notes = (string?)null
+        });
+        response.EnsureSuccessStatusCode();
+
+        var insert = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Insert);
+        insert.SubjectEmployeeId.Should().Be(EddieId);
+        insert.ActorEmployeeId.Should().Be(EddieId);   // actor == subject for self-service
+        insert.ActorRole.Should().Be("Employee");
+    }
+
+    [Fact]
+    public async Task SelfEdit_records_an_Update_where_actor_equals_subject()
+    {
+        await Factory.ResetAsync();
+        var regId = await SeedRegistrationAsync(EddieId, new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 5));
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        var response = await client.PutAsJsonAsync($"/api/me/leave/{regId}",
+            new EditRequest(Vacation, "2026-07-02", "2026-07-06"));
+        response.EnsureSuccessStatusCode();
+
+        var update = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Update);
+        update.EntityId.Should().Be(regId);
+        update.ActorEmployeeId.Should().Be(EddieId);
+    }
+
+    [Fact]
+    public async Task SelfDelete_records_a_Delete_where_actor_equals_subject()
+    {
+        await Factory.ResetAsync();
+        var regId = await SeedRegistrationAsync(EddieId, new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 5));
+        var client = await Factory.AuthenticatedClientAsync("employee", "Employee!123");
+
+        var response = await client.DeleteAsync($"/api/me/leave/{regId}");
+        response.EnsureSuccessStatusCode();
+
+        var delete = (await AuditRowsAsync()).Single(r => r.Action == AuditAction.Delete);
+        delete.EntityId.Should().Be(regId);
+        delete.ActorEmployeeId.Should().Be(EddieId);
+    }
 }
