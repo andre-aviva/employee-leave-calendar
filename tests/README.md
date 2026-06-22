@@ -14,11 +14,25 @@ pnpm install
 cp cypress.env.json.example cypress.env.json
 ```
 
-Fill in `cypress.env.json` with local credentials (`TARGET_USERNAME` /
-`TARGET_PASSWORD`). This file is gitignored.
+Fill in `cypress.env.json` with local credentials. The example file contains the
+default DbSeeder values for Development environments — no changes needed when running
+against a locally seeded database:
 
-`cypress.config.ts` points `baseUrl` at `http://localhost:3000` — update this once
-the front end's dev server port is known.
+```json
+{
+  "EMPLOYEE_USERNAME": "employee",
+  "EMPLOYEE_PASSWORD": "Employee!123",
+  "ADMIN_USERNAME": "admin",
+  "ADMIN_PASSWORD": "Admin!123"
+}
+```
+
+This file is gitignored. The backend must be started with `DbSeeder__IncludeDemoUsers=true`
+(the default in Development and the integration-test harness) — without it the test
+users (Alice, Eddie, Nora) are not seeded and all specs will fail at sign-in.
+
+`cypress.config.ts` points `baseUrl` at `http://localhost:3000`, matching the Vite
+dev server default.
 
 ## Scripts
 
@@ -34,13 +48,26 @@ the front end's dev server port is known.
 
 ```
 cypress/
-  e2e/                # spec files, organized by feature area (see skill section 19)
+  e2e/
+    a11y/             # accessibility spec (cypress-axe, WCAG 2.2 AA)
+    calendar/         # Calendar Overview spec
+    leave-management/ # Leave Management spec (Admin only)
+    my-leave/         # My Leave spec
+    navigation/       # Navigation Bar spec
+    security/         # security smoke spec
+    sign-in/          # Sign In spec
   fixtures/           # JSON fixtures (form data, etc.)
+  reports/            # generated reports (gitignored)
+    a11y/             # axe-html-reporter HTML output (written on a11y failures)
   support/
     commands.ts       # custom Cypress commands
     constants.ts      # shared enums (TEXTS, etc.) and regexes
-    e2e.ts            # global setup: log collector, real-events, uncaught exceptions
-    helpers/          # element() selector helpers + other shared utilities
+    e2e.ts            # global setup: log collector, real-events, cypress-axe, uncaught exceptions
+    helpers/
+      a11y.ts         # logA11yViolations — formats axe violations to cy.log + generates HTML report
+      api.ts          # cy.request helpers for API-level test data setup/teardown
+      dates.ts        # isoDate() / displayDate() date utilities
+      element.ts      # element() / elementStartsWith() / elementEndsWith() selector builders
     pages/            # Page Object classes (static-only classes)
     testdata/         # typed fixtures describing pages/entities
     types/            # shared TypeScript types
