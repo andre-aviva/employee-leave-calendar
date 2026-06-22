@@ -1,7 +1,7 @@
 import SignInPage from '../../support/pages/SignInPage';
 import CalendarPage from '../../support/pages/CalendarPage';
 import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
-import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
+import { LEAVE_TYPE_VACATION, ALL_LEAVE_TYPES } from '../../support/testdata/leaveTypes';
 import { apiSignIn, apiAdminCreateLeave, apiAdminDeleteLeave } from '../../support/helpers/api';
 import { isoDate } from '../../support/helpers/dates';
 
@@ -136,5 +136,19 @@ describe('Calendar Overview', () => {
 
     CalendarPage.visit();
     CalendarPage.getLeaveChips().first().should('contain.text', description);
+  });
+
+  // ── Leave type legend ─────────────────────────────────────────────────────────
+
+  describe('leave type legend', () => {
+    it('legend is visible below the calendar grid', () => {
+      CalendarPage.getLegend().should('be.visible');
+    });
+
+    it('legend lists all four leave types', () => {
+      ALL_LEAVE_TYPES.forEach((leaveType) => {
+        CalendarPage.getLegendItem(leaveType.name).should('exist');
+      });
+    });
   });
 });

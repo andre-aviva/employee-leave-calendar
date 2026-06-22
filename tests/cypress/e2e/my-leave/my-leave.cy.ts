@@ -126,11 +126,11 @@ describe('My Leave', () => {
       LeaveForm.get().should('be.visible');
     });
 
-    it('restricted leave type (Public Holiday) → TYPE_NOT_REGISTERABLE error', () => {
+    it('restricted leave type (Public Holiday) → TYPE_NOT_REGISTERABLE error below Leave Type field', () => {
       MyLeavePage.clickRegister();
       LeaveForm.fill({ leaveType: LEAVE_TYPE_PUBLIC_HOLIDAY, startDate: isoDate(5), endDate: isoDate(7) });
       LeaveForm.submit();
-      // exact error text from frontend resource file — assert once frontend is implemented
+      LeaveForm.checkLeaveTypeError();
       LeaveForm.get().should('be.visible');
     });
 
