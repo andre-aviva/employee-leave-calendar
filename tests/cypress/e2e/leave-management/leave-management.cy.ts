@@ -342,6 +342,40 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.getRow(0).should('contain.text', displayDate(startDate));
       AdminLeavePage.getRow(0).should('contain.text', displayDate(endDate));
     });
+
+    it('duration in days is shown in the Duration column', () => {
+      // isoDate(5) to isoDate(7) = 3 calendar days
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(7),
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getDurationCell(0).should('contain.text', '3');
+    });
+  });
+
+  // ── Table order ───────────────────────────────────────────────────────────────
+
+  describe('table order', () => {
+    it('leave table is sorted by start date descending — most recent first', () => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(7),
+      });
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getRow(0).should('contain.text', displayDate(isoDate(14)));
+      AdminLeavePage.getRow(1).should('contain.text', displayDate(isoDate(5)));
+    });
   });
 
   // ── Pagination ────────────────────────────────────────────────────────────────
@@ -381,6 +415,23 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.getPrevPage().should('not.be.disabled');
       AdminLeavePage.filterByEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       AdminLeavePage.getPrevPage().should('be.disabled');
+    });
+
+    it('pagination control shows current page number and updates on navigation', () => {
+      const employees = [EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE, EMPLOYEE_ALICE_ADMIN];
+      for (let i = 0; i < 21; i++) {
+        const emp = employees[i % employees.length];
+        apiAdminCreateLeave(adminToken, {
+          employeeId: emp.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(i + 1),
+          endDate: isoDate(i + 1),
+        });
+      }
+      AdminLeavePage.visit();
+      AdminLeavePage.getPaginationLabel().should('contain.text', '1');
+      AdminLeavePage.getNextPage().click();
+      AdminLeavePage.getPaginationLabel().should('contain.text', '2');
     });
   });
 

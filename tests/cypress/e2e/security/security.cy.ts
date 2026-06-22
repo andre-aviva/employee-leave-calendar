@@ -1,7 +1,7 @@
 import SignInPage from '../../support/pages/SignInPage';
 import NavigationBar from '../../support/pages/NavigationBar';
 import MyLeavePage from '../../support/pages/MyLeavePage';
-import { EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
+import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
 import { apiSignIn, apiCreateMyLeave, apiDeleteMyLeave } from '../../support/helpers/api';
 import { isoDate } from '../../support/helpers/dates';
@@ -58,5 +58,14 @@ describe('Security (E2E smoke)', () => {
       cy.visit(route);
       cy.url().should('include', '/sign-in');
     });
+  });
+
+  it('Admin — after sign-out, /admin/leave redirects to /sign-in', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+    NavigationBar.clickSignOut();
+    cy.url().should('include', '/sign-in');
+    cy.visit('/admin/leave');
+    cy.url().should('include', '/sign-in');
   });
 });

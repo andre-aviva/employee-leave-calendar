@@ -297,6 +297,25 @@ describe('My Leave', () => {
       MyLeavePage.getRow(0).should('contain.text', displayDate(startDate));
       MyLeavePage.getRow(0).should('contain.text', displayDate(endDate));
     });
+
+    it('duration in days is shown in the Duration column', () => {
+      // isoDate(7) to isoDate(9) = 3 calendar days
+      apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(7), endDate: isoDate(9) });
+      MyLeavePage.visit();
+      MyLeavePage.getDurationCell(0).should('contain.text', '3');
+    });
+  });
+
+  // ── Table order ───────────────────────────────────────────────────────────────
+
+  describe('table order', () => {
+    it('leave table is sorted by start date descending — most recent first', () => {
+      apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(7), endDate: isoDate(9) });
+      apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(14), endDate: isoDate(16) });
+      MyLeavePage.visit();
+      MyLeavePage.getRow(0).should('contain.text', displayDate(isoDate(14)));
+      MyLeavePage.getRow(1).should('contain.text', displayDate(isoDate(7)));
+    });
   });
 
   // ── Form field visibility ─────────────────────────────────────────────────────
