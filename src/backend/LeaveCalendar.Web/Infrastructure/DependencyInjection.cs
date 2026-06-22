@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text;
 using FluentValidation;
 using LeaveCalendar.Web.Common;
+using LeaveCalendar.Web.Infrastructure.Auditing;
 using LeaveCalendar.Web.Infrastructure.Identity;
 using LeaveCalendar.Web.Infrastructure.Jwt;
 using LeaveCalendar.Web.Infrastructure.Persistence;
@@ -19,7 +20,9 @@ public static class DependencyInjection
     public static WebApplicationBuilder AddLeaveCalendar(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
-        builder.AddNpgsqlDbContext<LeaveDbContext>("leavecalendar");
+        builder.AddNpgsqlDbContext<LeaveDbContext>("leavecalendar",
+            configureDbContextOptions: options => options.UseAuditing());
+        services.AddAuditing();
         services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
         // ── JWT fail-fast guard ───────────────────────────────────────────────

@@ -1,3 +1,4 @@
+using LeaveCalendar.Web.Infrastructure.Auditing;
 using LeaveCalendar.Web.Infrastructure.Identity;
 using LeaveCalendar.Web.Infrastructure.Persistence;
 using LeaveCalendar.Web.Infrastructure.Time;
@@ -57,8 +58,10 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 .ToList();
             foreach (var d in leaveDbDescriptors)
                 services.Remove(d);
+            // Match production: the audit interceptor must be present here too, since this
+            // replaces the Aspire-registered context (otherwise the suite runs un-audited).
             services.AddDbContext<LeaveDbContext>(o =>
-                o.UseNpgsql(_db.GetConnectionString()));
+                o.UseNpgsql(_db.GetConnectionString()).UseAuditing());
         });
     }
 
@@ -76,7 +79,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         using var scope = Services.CreateScope();
         var ctx = scope.ServiceProvider.GetRequiredService<LeaveDbContext>();
-        await ctx.Database.ExecuteSqlRawAsync("TRUNCATE TABLE leave_registrations RESTART IDENTITY CASCADE;");
+        await ctx.Database.ExecuteSqlRawAsync("TRUNCATE TABLE leave_registrations, audit_log RESTART IDENTITY CASCADE;");
     }
 
     public new async Task DisposeAsync()
