@@ -329,6 +329,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
 - `cypress.config.ts` baseUrl is `http://localhost:3000` (placeholder — update once dev server port is confirmed).
+- **E2E environment must have `includeDemoUsers: true`** — since PR #39, `DbSeeder` only seeds Alice/Eddie/Nora when this flag is enabled (Development and integration test harness environments). If the E2E target environment boots without it, all specs will fail at sign-in because the test users won't exist. Ensure the E2E runner sets `DbSeeder__IncludeDemoUsers=true` (or equivalent) in its environment config.
 
 ---
 
