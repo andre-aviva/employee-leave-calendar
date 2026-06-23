@@ -1,6 +1,26 @@
 interface ApiItem { id: string; }
 interface PagedResult { items: ApiItem[]; }
 
+export interface AuditEntry {
+  id: string;
+  occurredAt: string;
+  action: 'Insert' | 'Update' | 'Delete';
+  entityId: string;
+  subjectEmployeeId: string;
+  actorEmployeeId: string | null;
+  actorName: string;
+  actorRole: string;
+  changes: Record<string, unknown>;
+}
+
+interface AuditTrailPage {
+  items: AuditEntry[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 interface RegisterBody {
   leaveTypeId: string;
   startDate: string;
@@ -72,6 +92,38 @@ export function apiAdminDeleteLeave(token: string, id: string): void {
     headers: { Authorization: `Bearer ${token}` },
     failOnStatusCode: false,
   });
+}
+
+export function apiAdminEditLeave(token: string, id: string, body: RegisterBody): void {
+  cy.request({
+    method: 'PUT',
+    url: `/api/admin/leave/${id}`,
+    headers: { Authorization: `Bearer ${token}` },
+    body,
+  });
+}
+
+export function apiEditMyLeave(token: string, id: string, body: RegisterBody): void {
+  cy.request({
+    method: 'PUT',
+    url: `/api/me/leave/${id}`,
+    headers: { Authorization: `Bearer ${token}` },
+    body,
+  });
+}
+
+export function apiGetAuditTrail(
+  token: string,
+  qs?: Record<string, unknown>,
+): Cypress.Chainable<AuditTrailPage> {
+  return cy
+    .request<AuditTrailPage>({
+      method: 'GET',
+      url: '/api/admin/audit',
+      headers: { Authorization: `Bearer ${token}` },
+      qs,
+    })
+    .its('body');
 }
 
 // GET /api/admin/leave returns PagedResult — use .body.items, not .body
