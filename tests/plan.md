@@ -354,6 +354,44 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 | Admin | Pagination control shows the current page number and updates on navigation |
 | Employee | Navigating to /admin/leave → redirected (route guard) |
 
+### Audit Trail API (`/api/admin/audit`)
+
+> API-level Cypress spec (`audit-trail.cy.ts`) — no frontend UI yet. All tests use
+> `cy.request` directly. Each test locates its specific entry by `entityId` so accumulated
+> audit history from prior runs does not affect assertions. Count-based tests use a
+> baseline-delta approach.
+
+| Persona | Scenario |
+|---|---|
+| Unauthenticated | `GET /api/admin/audit` returns 401 |
+| Employee | `GET /api/admin/audit` returns 403 |
+| Admin | `GET /api/admin/audit` returns 200 with paged response shape |
+| Admin | Admin create → Insert entry with admin as actor, Eddie as subject; actor ≠ subject |
+| Admin | Admin edit → Update entry recording modified fields; admin as actor, Eddie as subject |
+| Admin | Admin delete → Delete entry attributed to the admin; actor ≠ subject |
+| Employee | Self-register → Insert entry where `actorEmployeeId == subjectEmployeeId` |
+| Employee | Self-edit → Update entry where actor equals subject |
+| Employee | Self-delete → Delete entry where actor equals subject |
+| Admin | Insert Changes contains the full column set (Id, EmployeeId, LeaveTypeId, StartDate, EndDate, Description, Notes) |
+| Admin | Update Changes contains only modified fields, each with `{ old, new }` shape |
+| Admin | Update Changes excludes unchanged fields (StartDate/EndDate/EmployeeId absent when not changed) |
+| Admin | Delete Changes contains the full original column set |
+| Admin | Description is kept verbatim in Changes — it is not a redacted field |
+| Admin | Non-null Notes is stored as `[redacted]` — the actual text is never persisted (D9 GDPR) |
+| Admin | Null Notes stays null in Changes — redacted marker is not applied to absent values |
+| Admin | When Notes changes in an Update, both old and new values are masked to `[redacted]` |
+| Admin | Filter `?subjectEmployeeId=X` returns only entries for employee X; other employees excluded |
+| Admin | Filter `?action=Insert` excludes Update and Delete entries for the same entity |
+| Admin | Filter `?action=Update` finds Update entries for an edited leave |
+| Admin | Entry created today appears when `?from=yesterday&to=today` |
+| Admin | Entry created today is excluded when range is entirely in the past |
+| Admin | Transposed range (`?from=later&to=earlier`) returns 400 |
+| Admin | `?pageSize=2` with 3+ entries: page 1 has exactly 2 items |
+| Admin | Page 2 is accessible and contains remaining items |
+| Admin | Response includes correct page, pageSize, totalCount, totalPages metadata |
+| Admin | The entry created second appears before the entry created first (newest-first order) |
+| Admin | All items on the page are in non-ascending OccurredAt order |
+
 ### Security (E2E smoke)
 
 | Scenario |
