@@ -4,6 +4,8 @@
 
 **Goal:** Write all Cypress E2E spec files covering the scenarios in `tests/plan.md`, covering Sign In, Navigation Bar, Calendar Overview, My Leave, Leave Management, and Security.
 
+> **Status: ✅ Complete** — all tasks done and merged through PR #83. See `tests/plan.md` for the live scenario inventory and current state.
+
 **Architecture:** Specs import Page Object Models from `tests/cypress/support/pages/` and typed test data from `tests/cypress/support/testdata/`. API-level seeding (`cy.request`) ensures each test starts in a known database state without relying on UI actions for setup/teardown. All specs are blocked on frontend implementation — verify with `pnpm typecheck` until the frontend serves on `http://localhost:3000`.
 
 **Tech Stack:** Cypress 15.17.0, TypeScript, cypress-real-events, cypress-terminal-report, cypress-recurse
@@ -1402,8 +1404,26 @@ The month-boundary test seeds leave via the admin API and cleans up in `afterEac
 | #46 | `test/e2e-security-spec` | `security.cy.ts` | ✅ Merged |
 | #47 | `docs/update-e2e-plan-with-pr-status` | mark all tasks done, add PR numbers and implementation notes | ✅ Merged |
 | #48 | `fix/cleanup-admin-leave-pagination` | fix `apiCleanupAdminLeave` to fetch all pages via `pageSize=1000` | ✅ Merged |
-| #58 | `fix/cleanup-helper-pagesize-and-plan-notes` | fix `apiCleanupAdminLeave` pageSize to 100 (server max) + document `includeDemoUsers` risk in `plan.md` | Awaiting review |
-| #59 | `test/e2e-a11y-spec` | cypress-axe + axe-html-reporter setup, WCAG 2.2 AA spec for all 4 pages, `mocha/no-mocha-arrows` ESLint fix | Open |
+| #58 | `fix/cleanup-helper-pagesize-and-plan-notes` | fix `apiCleanupAdminLeave` pageSize to 100 (server max) + document `includeDemoUsers` risk in `plan.md` | ✅ Merged |
+| #59 | `test/e2e-a11y-spec` | cypress-axe + axe-html-reporter setup, WCAG 2.2 AA spec for all 4 pages, `mocha/no-mocha-arrows` ESLint fix | ✅ Merged |
+| #61 | `test/e2e-pom-getters` | POM getters for all FR gap-fill scenarios | ✅ Merged |
+| #62 | `test/e2e-sign-in-gap-fill` | sign-in gap-fill: empty fields, root redirect | ✅ Merged |
+| #63 | `test/e2e-security-gap-fill` | security gap-fill: post-sign-out routes, cross-employee isolation | ✅ Merged |
+| #64 | `docs/plan-gap-fill-notes` | plan.md: gap-fill scenario notes | ✅ Merged |
+| #65 | `test/e2e-calendar-gap-fill` | calendar gap-fill: admin access, two-employee chips, month fetch, leave chip name + description | ✅ Merged |
+| #66 | `test/e2e-my-leave-gap-fill` | my-leave gap-fill: past-date buttons, today boundary, form field visibility, edit pre-fill, admin on /my-leave | ✅ Merged |
+| #67 | `test/e2e-leave-management-gap-fill` | LM gap-fill: past dates, two-employee, adjacency, filter edge cases, pagination, route guard | ✅ Merged |
+| #71 | `test/e2e-nav-bar-gap-fill` | nav bar gap-fill: admin name display, app logo link, visibility on /admin/leave | ✅ Merged |
+| #72 | `test/e2e-confirmation-dialog-spec` | shared Confirmation Dialog spec (title, message, labels, backdrop) | ✅ Merged |
+| #73 | `test/e2e-leave-type-badge-spec` | shared Leave Type Badge spec (visible in My Leave + LM rows, correct name) | ✅ Merged |
+| #74 | `docs/plan-sync` | plan.md: current state table + known issues sync | ✅ Merged |
+| #75 | `docs/plan-description-notes` | plan.md: fix FR column list (Description not Status) + description/notes scenarios | ✅ Merged |
+| #76 | `test/e2e-pom-leavetype-error-legend` | POM: `getLeaveTypeError()` (LeaveForm) + `getLegend()` / `getLegendItem()` (CalendarPage) | ✅ Merged |
+| #78 | `docs/plan-fr-gaps` | plan.md: legend, chip overflow, LM edit pre-fill scenarios; correct chip overflow categorisation | ✅ Merged |
+| #79 | `test/e2e-specs-fr-gaps` | specs: TYPE_NOT_REGISTERABLE assertion, LM edit pre-fill, calendar legend tests | ✅ Merged |
+| #80 | `test/e2e-pom-duration-pagination` | POM: `getDurationCell()` (MyLeave + AdminLeave) + `getPaginationLabel()` (AdminLeave) | ✅ Merged |
+| #82 | `docs/plan-fr-gaps-2` | plan.md: duration column, sort order, pagination label, admin sign-out scenarios | ✅ Merged |
+| #83 | `test/e2e-specs-fr-gaps-2` | specs: chip name assertion fix, duration, sort order, pagination label, admin sign-out | ✅ Merged |
 
 Each task branches off the **merged** `main` from the previous task. Merge Task 2 before starting any spec task — all spec tasks depend on the helpers and IDs it introduces.
 
@@ -1419,8 +1439,9 @@ Each task branches off the **merged** `main` from the previous task. Merge Task 
 
 - **Frontend dependency** — all specs fail at runtime until the frontend serves on `http://localhost:3000`. Run `pnpm typecheck` in `tests/` to verify TypeScript during spec authoring.
 - **Timezone edge case** — `isoDate()` uses the test runner's local system date. Tests asserting "today" behaviour may behave unexpectedly near midnight Europe/Amsterdam time.
-- **TYPE_NOT_REGISTERABLE error text** — exact UI message comes from the frontend resource file; the Public Holiday test in Task 6 does not assert the text yet. Add the assertion to `TEXTS` once the frontend is implemented.
+- ~~**TYPE_NOT_REGISTERABLE error text** — exact UI message comes from the frontend resource file; the Public Holiday test in Task 6 does not assert the text yet.~~ Fixed in PR #79: `LeaveForm.checkLeaveTypeError()` now asserts the error element is visible (FR does not specify the text; Design System wording noted in `tests/plan.md`).
 - **AdminLeavePage `getRetryButton()`** — added in Task 7 with selector `AdminLeave_RetryButton`. Verify the `data-test` value against the rendered HTML once the frontend is built.
-- ~~**`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20).~~ Fixed in PR #48: `pageSize=1000` query param added so all records are fetched in one request.
-- **`includeDemoUsers` requirement** — since PR #39, DbSeeder only seeds Alice/Eddie/Nora when `DbSeeder__IncludeDemoUsers=true` (or equivalent) is set in the environment. If the E2E target environment boots without it, all specs will fail at sign-in. Tracked in PR #58.
-- **Accessibility spec (PR #59)** — `cypress/reports/a11y/a11y-report.html` is written on any `cy.checkA11y()` failure; the directory is gitignored. The spec will not pass until the frontend is implemented (same constraint as all other specs).
+- ~~**`apiCleanupAdminLeave` pagination** — fetches page 1 only (default pageSize = 20).~~ Fixed in PR #48 (`pageSize=1000`), then corrected in PR #58 (`pageSize=100` — server enforces a maximum of 100).
+- **`includeDemoUsers` requirement** — since PR #39, DbSeeder only seeds Alice/Eddie/Nora when `DbSeeder__IncludeDemoUsers=true` (or equivalent) is set. Documented in PR #58 and `tests/plan.md` known issues.
+- **Accessibility spec (PR #59)** — merged; spec will pass once the frontend is implemented (same constraint as all other specs).
+- **Frontend dependency** — all specs fail at runtime until the frontend serves on `http://localhost:3000` with `data-test` attributes in place. Run `pnpm typecheck` in `tests/` to verify TypeScript during spec authoring.
