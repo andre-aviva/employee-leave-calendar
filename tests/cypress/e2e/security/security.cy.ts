@@ -68,4 +68,63 @@ describe('Security (E2E smoke)', () => {
     cy.visit('/admin/leave');
     cy.url().should('include', '/sign-in');
   });
+
+  // ── API access control — main leave endpoints ─────────────────────────────────
+
+  describe('API access control — main leave endpoints', () => {
+    let eddieApiToken: string;
+
+    before(() => {
+      apiSignIn(EMPLOYEE_EDDIE_EMPLOYEE.username, EMPLOYEE_EDDIE_EMPLOYEE.password).then((t) => {
+        eddieApiToken = t;
+      });
+    });
+
+    it('GET /api/me/leave — unauthenticated returns 401', () => {
+      cy.request({ method: 'GET', url: '/api/me/leave', failOnStatusCode: false })
+        .its('status').should('equal', 401);
+    });
+
+    it('POST /api/me/leave — unauthenticated returns 401', () => {
+      cy.request({
+        method: 'POST',
+        url: '/api/me/leave',
+        body: {
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(7),
+          endDate: isoDate(9),
+        },
+        failOnStatusCode: false,
+      }).its('status').should('equal', 401);
+    });
+
+    it('GET /api/admin/leave — unauthenticated returns 401', () => {
+      cy.request({ method: 'GET', url: '/api/admin/leave', failOnStatusCode: false })
+        .its('status').should('equal', 401);
+    });
+
+    it('GET /api/admin/leave — employee-role token returns 403', () => {
+      cy.request({
+        method: 'GET',
+        url: '/api/admin/leave',
+        headers: { Authorization: `Bearer ${eddieApiToken}` },
+        failOnStatusCode: false,
+      }).its('status').should('equal', 403);
+    });
+
+    it('POST /api/admin/leave — employee-role token returns 403', () => {
+      cy.request({
+        method: 'POST',
+        url: '/api/admin/leave',
+        headers: { Authorization: `Bearer ${eddieApiToken}` },
+        body: {
+          employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(7),
+          endDate: isoDate(9),
+        },
+        failOnStatusCode: false,
+      }).its('status').should('equal', 403);
+    });
+  });
 });
