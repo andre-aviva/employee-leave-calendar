@@ -415,6 +415,76 @@ describe('My Leave', () => {
     });
   });
 
+  // ── Notes field ──────────────────────────────────────────────────────────────
+
+  describe('notes field', () => {
+    it('notes is optional — form submits and table refreshes when notes are filled', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        notes: 'Doctor appointment — need to leave by 3pm',
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      MyLeavePage.checkRowCount(1);
+    });
+
+    it('notes field enforces max 500 characters', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fillNotes('a'.repeat(501));
+      LeaveForm.getNotesInput().should('have.value', 'a'.repeat(500));
+      LeaveForm.cancel();
+    });
+
+    it('notes character counter reflects the number of characters typed', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fillNotes('a'.repeat(400));
+      LeaveForm.getNotesCharCounter().should('contain.text', '400');
+      LeaveForm.cancel();
+    });
+
+    it('hovering a row shows the notes tooltip when notes have been provided', () => {
+      const notes = 'Annual team retreat — flights booked';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        notes,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getRow(0).realHover();
+      cy.get('[role="tooltip"]').should('contain.text', notes);
+    });
+
+    it('hovering a row with no notes does not show a tooltip', () => {
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        // notes intentionally omitted
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getRow(0).realHover();
+      cy.get('[role="tooltip"]').should('not.exist');
+    });
+
+    it('edit form is pre-populated with notes', () => {
+      const notes = 'Need to book flights in advance';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+        notes,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.clickEdit(0);
+      LeaveForm.getNotesInput().should('have.value', notes);
+      LeaveForm.cancel();
+    });
+  });
+
   // ── Admin on /my-leave ────────────────────────────────────────────────────────
 
   describe('admin on /my-leave', () => {
