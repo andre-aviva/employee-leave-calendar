@@ -120,3 +120,59 @@ Demo users — including the well-known `admin` / `Admin!123` account — are se
 Wire-format dates are ISO YYYY-MM-DD; the UI displays DD-MM-YYYY. "Today" is computed in Europe/Amsterdam. Business-rule violations return RFC 9457 ProblemDetails with stable 422 codes (OVERLAP, TYPE_NOT_REGISTERABLE, START_DATE_IN_PAST). See each subfolder README for area-specific conventions.
 
 The backend is fully implemented and the local stack runs end-to-end via Aspire (see **Local development**). The frontend currently holds a minimal wiring-check app; the full UI is built by a separate team per `src/frontend/README.md`.
+
+## Configure MCP in Jetbrain IDE's (Webstorm, Rider)
+
+This setup allows Junie / AI Assistant in WebStorm to access Figma designs through MCP.
+
+### Prerequisites
+
+- WebStorm 2026.1+
+- Figma Desktop App
+- Dev Mode enabled
+
+### Enable MCP in Figma
+
+1. Open your Figma file in the Desktop App.
+2. Enable **Dev Mode**.
+3. Enable the **Desktop MCP Server**.
+
+MCP will be available at:
+
+```text
+http://127.0.0.1:3845/mcp
+```
+
+> Keep the Figma Desktop App running while using MCP.
+
+### Configure in Jetbrain IDE
+
+Navigate to:
+
+```text
+Settings → Tools → Junie → Open Junie Settings → Tab: Junie Model Context Protocol (MCP) → Add (+)
+```
+
+Add the server:
+```
+{
+    "mcpServers": {
+        "Figma": {
+            "url": "http://127.0.0.1:3845/mcp"
+        }
+    }
+}
+```
+
+Verify the status is **Connected**. After clicking the status icon, you should also see the available Figma MCP Tools ('get_design_context', etc.)
+
+### Test the Connection
+
+In Junie, run:
+
+```text
+Use the local Figma Remote MCP via the Figma Desktop App.
+
+What Figma files, pages, and frames are available?
+Provide the structure as a tree.
+```
