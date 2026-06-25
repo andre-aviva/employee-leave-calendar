@@ -28,8 +28,9 @@
 | Backend: ListAllLeave, AdminCreateLeave, AdminEditLeave, AdminDeleteLeave | Done (#12, #13) |
 | Frontend | **Not yet implemented** — blocks all E2E tests |
 | Cypress scaffold (`tests/`) | In place: pnpm, TypeScript, cypress-real-events, cypress-terminal-report, cypress-axe, axe-html-reporter, POM skill |
-| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73, #76–#79; #80–#81 open) — all scenarios below are covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
+| E2E specs | **Written and merged** (#41–#46, #62–#67, #71–#73, #76–#79, #91–#96) — all 31 actionable FR gaps covered; specs will pass once the frontend is implemented and `data-test` attributes are in place |
 | FR gap fill | **Merged** (#61–#73, #76–#79) — POM getters (#61, #76, #80), nav bar (#71), shared Confirmation Dialog spec (#72), shared LeaveTypeBadge spec (#73), sign-in (#62), security (#63), plan notes (#64, #74–#75, #78), calendar (#65, legend in #79), my-leave (#66), leave-management (#67) |
+| FR coverage gap analysis | **Merged** (#91–#96) — 31 gaps closed across 6 PRs: my-leave description/notes/overlap/Other (#95), leave-management description/notes/functional (#96), leave-type-badge Sick/Holiday/Other (#91), navigation click-nav (#92), security API 401/403 (#93), calendar chip/tooltip/today/overflow (#94). Gap 6 (chip initials fallback) deferred. |
 | Accessibility suite | **Merged PR #59** — WCAG 2.2 AA checks on all 4 pages via cypress-axe; violations logged to terminal and written to `cypress/reports/a11y/a11y-report.html` |
 
 ---
@@ -422,6 +423,7 @@ The backend currently has **no Approve or Reject slices**. Until resolved, write
 - ~~**Accessibility (cypress-axe)** — AD-QA-1 specifies cypress-axe as the WCAG 2.2 AA accessibility tool. Not yet installed.~~ — installed and merged in #59; a11y spec covers all 4 pages.
 - **Design System vs functional spec discrepancy** — see discrepancy section; confirm approval workflow intent with team before writing specs.
 - **Error message wording** — functional spec and Design System differ; verify exact strings against running frontend before asserting in tests.
+- **FR coverage gap tests — CI risks** (added 2026-06-25, PRs #91–#96): five `data-test` attributes are unverified (`LeaveForm_NotesCharCounter`, `MyLeave_DescriptionCell`, `AdminLeave_DescriptionCell`, `EmployeeLeaveChip_Description`, `[data-test$="Overflow"]`); five tests use `[role="tooltip"]`. If any are absent from the app, apply `it.skip(...)` and add the missing attribute. Also verify `TEXTS.MY_LEAVE.FORM_LEAVE_TYPE_ERROR` matches the actual UI text.
 - `cypress.config.ts` baseUrl is `http://localhost:3000` (placeholder — update once dev server port is confirmed).
 - **E2E environment must have `includeDemoUsers: true`** — since PR #39, `DbSeeder` only seeds Alice/Eddie/Nora when this flag is enabled (Development and integration test harness environments). If the E2E target environment boots without it, all specs will fail at sign-in because the test users won't exist. Ensure the E2E runner sets `DbSeeder__IncludeDemoUsers=true` (or equivalent) in its environment config.
 
