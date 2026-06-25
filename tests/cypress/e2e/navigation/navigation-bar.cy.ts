@@ -55,4 +55,27 @@ describe('Navigation Bar', () => {
     SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
     NavigationBar.checkUserName(EMPLOYEE_ALICE_ADMIN.name);
   });
+
+  it('Calendar Overview link navigates to /calendar', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+    cy.visit('/my-leave'); // start somewhere else
+    NavigationBar.clickCalendar();
+    cy.url().should('include', '/calendar');
+  });
+
+  it('My Leave link navigates to /my-leave', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+    // /calendar is the landing page after sign-in
+    NavigationBar.clickMyLeave();
+    cy.url().should('include', '/my-leave');
+  });
+
+  it('Leave Management link navigates to /admin/leave (Admin only)', () => {
+    SignInPage.visit();
+    SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+    NavigationBar.clickLeaveManagement();
+    cy.url().should('include', '/admin/leave');
+  });
 });
