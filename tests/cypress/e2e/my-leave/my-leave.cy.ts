@@ -365,6 +365,56 @@ describe('My Leave', () => {
     });
   });
 
+  // ── Description field ────────────────────────────────────────────────────────
+
+  describe('description field', () => {
+    it('description is optional — form submits and table refreshes when description is filled', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        description: 'Beach holiday',
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      MyLeavePage.checkRowCount(1);
+    });
+
+    it('description field enforces max 50 characters', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fillDescription('a'.repeat(51));
+      LeaveForm.getDescriptionInput().should('have.value', 'a'.repeat(50));
+      LeaveForm.cancel();
+    });
+
+    it('description is shown in the Description column of the table', () => {
+      const description = 'Summer vacation';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        description,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getDescriptionCell(0).should('contain.text', description);
+    });
+
+    it('edit form is pre-populated with description', () => {
+      const description = 'Beach holiday';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+        description,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.clickEdit(0);
+      LeaveForm.getDescriptionInput().should('have.value', description);
+      LeaveForm.cancel();
+    });
+  });
+
   // ── Admin on /my-leave ────────────────────────────────────────────────────────
 
   describe('admin on /my-leave', () => {
