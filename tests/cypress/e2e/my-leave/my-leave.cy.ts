@@ -3,7 +3,7 @@ import MyLeavePage from '../../support/pages/MyLeavePage';
 import LeaveForm from '../../support/pages/LeaveForm';
 import ConfirmationDialog from '../../support/pages/ConfirmationDialog';
 import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE } from '../../support/testdata/employees';
-import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY } from '../../support/testdata/leaveTypes';
+import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY, LEAVE_TYPE_OTHER } from '../../support/testdata/leaveTypes';
 import { TEXTS } from '../../support/constants';
 import { apiSignIn, apiAdminCreateLeave, apiCleanupAdminLeave, apiCreateMyLeave, apiCleanupMyLeave } from '../../support/helpers/api';
 import { isoDate, displayDate } from '../../support/helpers/dates';
@@ -130,7 +130,7 @@ describe('My Leave', () => {
       MyLeavePage.clickRegister();
       LeaveForm.fill({ leaveType: LEAVE_TYPE_PUBLIC_HOLIDAY, startDate: isoDate(5), endDate: isoDate(7) });
       LeaveForm.submit();
-      LeaveForm.checkLeaveTypeError();
+      LeaveForm.getLeaveTypeError().should('contain.text', TEXTS.MY_LEAVE.FORM_LEAVE_TYPE_ERROR);
       LeaveForm.get().should('be.visible');
     });
 
@@ -362,6 +362,173 @@ describe('My Leave', () => {
       MyLeavePage.clickEdit(0);
       LeaveForm.getEmployeeSelect().should('not.exist');
       LeaveForm.cancel();
+    });
+  });
+
+  // ── Description field ────────────────────────────────────────────────────────
+
+  describe('description field', () => {
+    it('description is optional — form submits and table refreshes when description is filled', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        description: 'Beach holiday',
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      MyLeavePage.checkRowCount(1);
+    });
+
+    it('description field enforces max 50 characters', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fillDescription('a'.repeat(51));
+      LeaveForm.getDescriptionInput().should('have.value', 'a'.repeat(50));
+      LeaveForm.cancel();
+    });
+
+    it('description is shown in the Description column of the table', () => {
+      const description = 'Summer vacation';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        description,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getDescriptionCell(0).should('contain.text', description);
+    });
+
+    it('edit form is pre-populated with description', () => {
+      const description = 'Beach holiday';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+        description,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.clickEdit(0);
+      LeaveForm.getDescriptionInput().should('have.value', description);
+      LeaveForm.cancel();
+    });
+  });
+
+  // ── Notes field ──────────────────────────────────────────────────────────────
+
+  describe('notes field', () => {
+    it('notes is optional — form submits and table refreshes when notes are filled', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        notes: 'Doctor appointment — need to leave by 3pm',
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      MyLeavePage.checkRowCount(1);
+    });
+
+    it('notes field enforces max 500 characters', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fillNotes('a'.repeat(501));
+      LeaveForm.getNotesInput().should('have.value', 'a'.repeat(500));
+      LeaveForm.cancel();
+    });
+
+    it('notes character counter reflects the number of characters typed', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fillNotes('a'.repeat(400));
+      LeaveForm.getNotesCharCounter().should('contain.text', '400');
+      LeaveForm.cancel();
+    });
+
+    it('hovering a row shows the notes tooltip when notes have been provided', () => {
+      const notes = 'Annual team retreat — flights booked';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        notes,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getRow(0).realHover();
+      cy.get('[role="tooltip"]').should('contain.text', notes);
+    });
+
+    it('hovering a row with no notes does not show a tooltip', () => {
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        // notes intentionally omitted
+      });
+      MyLeavePage.visit();
+      MyLeavePage.getRow(0).realHover();
+      cy.get('[role="tooltip"]').should('not.exist');
+    });
+
+    it('edit form is pre-populated with notes', () => {
+      const notes = 'Need to book flights in advance';
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+        notes,
+      });
+      MyLeavePage.visit();
+      MyLeavePage.clickEdit(0);
+      LeaveForm.getNotesInput().should('have.value', notes);
+      LeaveForm.cancel();
+    });
+  });
+
+  // ── Edit — overlap validation ─────────────────────────────────────────────────
+
+  describe('edit — overlap validation', () => {
+    it('editing a registration to overlap an existing one for the same employee → OVERLAP error', () => {
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(9),
+      });
+      apiCreateMyLeave(eddieToken, {
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(15),
+        endDate: isoDate(19),
+      });
+      MyLeavePage.visit();
+      // Row 0 is the later record (descending order — isoDate(15))
+      MyLeavePage.clickEdit(0);
+      LeaveForm.fillStartDate(isoDate(7));
+      LeaveForm.fillEndDate(isoDate(17));
+      LeaveForm.submit();
+      LeaveForm.checkFormError(TEXTS.MY_LEAVE.FORM_OVERLAP_ERROR);
+      LeaveForm.get().should('be.visible');
+    });
+  });
+
+  // ── Other leave type ──────────────────────────────────────────────────────────
+
+  describe('Other leave type', () => {
+    it('Other leave type is available in the Employee leave type dropdown', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.getLeaveTypeSelect().should('contain.text', LEAVE_TYPE_OTHER.name);
+      LeaveForm.cancel();
+    });
+
+    it('Other leave type is registerable by Employee — form submits and table refreshes', () => {
+      MyLeavePage.clickRegister();
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_OTHER,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      MyLeavePage.checkRowCount(1);
     });
   });
 

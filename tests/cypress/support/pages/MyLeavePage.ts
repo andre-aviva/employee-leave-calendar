@@ -87,6 +87,10 @@ class MyLeavePage {
     return cy.get(element('MyLeave_TableRow')).eq(index).find(element('MyLeave_DurationCell'));
   }
 
+  static getDescriptionCell(index: number) {
+    return cy.get(element('MyLeave_TableRow')).eq(index).find(element('MyLeave_DescriptionCell'));
+  }
+
 }
 
 export default MyLeavePage;
