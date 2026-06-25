@@ -501,4 +501,80 @@ describe('Leave Management (Admin only)', () => {
       LeaveForm.cancel();
     });
   });
+
+  // ── Notes field ──────────────────────────────────────────────────────────────
+
+  describe('notes field', () => {
+    it('notes is optional — Admin form submits and table refreshes when notes are filled', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        notes: 'Approved by HR — ref #4521',
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      AdminLeavePage.checkRowCount(1);
+    });
+
+    it('notes field enforces max 500 characters in the Admin form', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fillNotes('a'.repeat(501));
+      LeaveForm.getNotesInput().should('have.value', 'a'.repeat(500));
+      LeaveForm.cancel();
+    });
+
+    it('notes character counter reflects the number of characters typed in the Admin form', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fillNotes('a'.repeat(350));
+      LeaveForm.getNotesCharCounter().should('contain.text', '350');
+      LeaveForm.cancel();
+    });
+
+    it('hovering an Admin table row shows the notes tooltip when notes have been provided', () => {
+      const notes = 'HR approved — see ticket #8801';
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        notes,
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getRow(0).realHover();
+      cy.get('[role="tooltip"]').should('contain.text', notes);
+    });
+
+    it('hovering an Admin table row with no notes does not show a tooltip', () => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        // notes intentionally omitted
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getRow(0).realHover();
+      cy.get('[role="tooltip"]').should('not.exist');
+    });
+
+    it('edit form is pre-populated with notes', () => {
+      const notes = 'Approved by manager';
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(-30),
+        endDate: isoDate(-28),
+        notes,
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.clickEdit(0);
+      LeaveForm.getNotesInput().should('have.value', notes);
+      LeaveForm.cancel();
+    });
+  });
 });
