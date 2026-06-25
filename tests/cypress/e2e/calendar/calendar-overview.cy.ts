@@ -4,6 +4,7 @@ import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } f
 import { LEAVE_TYPE_VACATION, ALL_LEAVE_TYPES } from '../../support/testdata/leaveTypes';
 import { apiSignIn, apiAdminCreateLeave, apiAdminDeleteLeave } from '../../support/helpers/api';
 import { isoDate } from '../../support/helpers/dates';
+import { element } from '../../support/helpers/element';
 
 describe('Calendar Overview', () => {
   let adminToken: string;
@@ -137,6 +138,78 @@ describe('Calendar Overview', () => {
 
     CalendarPage.visit();
     CalendarPage.getLeaveChips().first().should('contain.text', description);
+  });
+
+  it('chip with no description shows only the employee name — no description text is rendered', () => {
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: isoDate(8),
+      endDate: isoDate(8),
+      // description intentionally omitted
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    const firstName = EMPLOYEE_EDDIE_EMPLOYEE.name.split(' ')[0];
+    CalendarPage.getLeaveChips().first().within(() => {
+      cy.contains(firstName).should('be.visible');
+    });
+    // There should be no second line of text (no description element)
+    CalendarPage.getLeaveChips().first().find(element('EmployeeLeaveChip_Description')).should('not.exist');
+  });
+
+  it('hovering a chip shows the notes tooltip when notes have been provided', () => {
+    const notes = 'Annual team retreat — pre-booked';
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: isoDate(9),
+      endDate: isoDate(9),
+      notes,
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    CalendarPage.getLeaveChips().first().realHover();
+    cy.get('[role="tooltip"]').should('contain.text', notes);
+  });
+
+  it('hovering a chip with no notes does not show a tooltip', () => {
+    apiAdminCreateLeave(adminToken, {
+      employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+      leaveTypeId: LEAVE_TYPE_VACATION.id,
+      startDate: isoDate(10),
+      endDate: isoDate(10),
+      // notes intentionally omitted
+    }).then((id) => createdIds.push(id));
+
+    CalendarPage.visit();
+    CalendarPage.getLeaveChips().first().realHover();
+    cy.get('[role="tooltip"]').should('not.exist');
+  });
+
+  it('today\'s date cell is visually highlighted', () => {
+    CalendarPage.visit();
+    // Exactly one day cell should be marked as today
+    CalendarPage.getTodayCell().should('have.length', 1);
+  });
+
+  it('day cell shows an overflow indicator when registrations exceed the visible chip limit', () => {
+    const sameDay = isoDate(11);
+    // Seed all three test employees on the same day to maximise chip count
+    [EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE].forEach((emp) => {
+      apiAdminCreateLeave(adminToken, {
+        employeeId: emp.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: sameDay,
+        endDate: sameDay,
+      }).then((id) => createdIds.push(id));
+    });
+
+    CalendarPage.visit();
+    // If the visible-chip threshold is ≤ 3, an overflow indicator will exist.
+    // If this assertion fails, the threshold is > 3 — triage with the team to agree
+    // on a test approach (e.g. add more test employees or adjust the threshold).
+    cy.get('[data-test$="Overflow"]').should('exist');
   });
 
   // ── Leave type legend ─────────────────────────────────────────────────────────

@@ -25,6 +25,10 @@ class CalendarPage {
     return cy.get(element('CalendarGrid_DayCell'));
   }
 
+  static getTodayCell() {
+    return cy.get(element('CalendarGrid_DayCell')).filter('[data-today]');
+  }
+
   static getLeaveChips() {
     return cy.get(element('EmployeeLeaveChip'));
   }
