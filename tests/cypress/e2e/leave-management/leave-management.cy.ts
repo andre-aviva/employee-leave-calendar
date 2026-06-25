@@ -447,4 +447,58 @@ describe('Leave Management (Admin only)', () => {
       cy.url().should('not.include', '/admin/leave');
     });
   });
+
+  // ── Description field ────────────────────────────────────────────────────────
+
+  describe('description field', () => {
+    it('description is optional — form submits and table refreshes when description is filled', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        description: 'Beach holiday',
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      AdminLeavePage.checkRowCount(1);
+    });
+
+    it('description field enforces max 50 characters', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fillDescription('a'.repeat(51));
+      LeaveForm.getDescriptionInput().should('have.value', 'a'.repeat(50));
+      LeaveForm.cancel();
+    });
+
+    it('description is shown in the Description column of the Admin table', () => {
+      const description = 'Parental leave';
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+        description,
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.getDescriptionCell(0).should('contain.text', description);
+    });
+
+    it('edit form is pre-populated with description', () => {
+      const description = 'Parental leave';
+      apiAdminCreateLeave(adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(-30),
+        endDate: isoDate(-28),
+        description,
+      });
+      AdminLeavePage.visit();
+      AdminLeavePage.clickEdit(0);
+      LeaveForm.getDescriptionInput().should('have.value', description);
+      LeaveForm.cancel();
+    });
+  });
 });

@@ -75,6 +75,10 @@ class AdminLeavePage {
     return cy.get(element('AdminLeave_TableRow')).eq(index).find(element('AdminLeave_DurationCell'));
   }
 
+  static getDescriptionCell(index: number) {
+    return cy.get(element('AdminLeave_TableRow')).eq(index).find(element('AdminLeave_DescriptionCell'));
+  }
+
   static clickAddLeave() {
     this.getAddLeaveButton().click();
   }
