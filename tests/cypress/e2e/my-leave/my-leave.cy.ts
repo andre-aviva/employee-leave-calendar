@@ -130,7 +130,7 @@ describe('My Leave', () => {
       MyLeavePage.clickRegister();
       LeaveForm.fill({ leaveType: LEAVE_TYPE_PUBLIC_HOLIDAY, startDate: isoDate(5), endDate: isoDate(7) });
       LeaveForm.submit();
-      LeaveForm.checkLeaveTypeError();
+      LeaveForm.getLeaveTypeError().should('contain.text', TEXTS.MY_LEAVE.FORM_LEAVE_TYPE_ERROR);
       LeaveForm.get().should('be.visible');
     });
 
