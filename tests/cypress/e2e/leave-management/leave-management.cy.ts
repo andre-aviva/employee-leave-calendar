@@ -7,7 +7,7 @@ import {
   EMPLOYEE_EDDIE_EMPLOYEE,
   EMPLOYEE_NORA_NEWBIE,
 } from '../../support/testdata/employees';
-import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY } from '../../support/testdata/leaveTypes';
+import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY, LEAVE_TYPE_OTHER } from '../../support/testdata/leaveTypes';
 import { TEXTS } from '../../support/constants';
 import { apiSignIn, apiAdminCreateLeave, apiCleanupAdminLeave } from '../../support/helpers/api';
 import { isoDate, displayDate } from '../../support/helpers/dates';
@@ -324,6 +324,13 @@ describe('Leave Management (Admin only)', () => {
       cy.wait('@adminFetch');
       AdminLeavePage.checkRowCount(1);
     });
+
+    it('date range filter with no matching records shows empty state', () => {
+      // The beforeEach already seeds records at isoDate(5) and isoDate(10).
+      // Filter to a range that excludes both.
+      AdminLeavePage.filterByDateRange(isoDate(20), isoDate(25));
+      AdminLeavePage.checkEmptyState();
+    });
   });
 
   // ── Date formatting ───────────────────────────────────────────────────────────
@@ -433,6 +440,23 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.getNextPage().click();
       AdminLeavePage.getPaginationLabel().should('contain.text', '2');
     });
+
+    it('pagination label shows the total page count alongside the current page', () => {
+      const employees = [EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE, EMPLOYEE_ALICE_ADMIN];
+      for (let i = 0; i < 21; i++) {
+        const emp = employees[i % employees.length];
+        apiAdminCreateLeave(adminToken, {
+          employeeId: emp.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(i + 1),
+          endDate: isoDate(i + 1),
+        });
+      }
+      AdminLeavePage.visit();
+      // 21 records at page size 20 → 2 pages total. The label must show both.
+      AdminLeavePage.getPaginationLabel().should('contain.text', '1'); // current page
+      AdminLeavePage.getPaginationLabel().should('contain.text', '2'); // total pages
+    });
   });
 
   // ── Route guard ───────────────────────────────────────────────────────────────
@@ -445,6 +469,23 @@ describe('Leave Management (Admin only)', () => {
       SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
       cy.visit('/admin/leave');
       cy.url().should('not.include', '/admin/leave');
+    });
+  });
+
+  // ── Other leave type ──────────────────────────────────────────────────────────
+
+  describe('Other leave type', () => {
+    it('Admin can create leave for any employee using the Other leave type', () => {
+      AdminLeavePage.clickAddLeave();
+      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_OTHER,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+      });
+      LeaveForm.submit();
+      LeaveForm.get().should('not.exist');
+      AdminLeavePage.checkRowCount(1);
     });
   });
 
