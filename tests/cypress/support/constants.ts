@@ -5,6 +5,7 @@ export const TEXTS = {
     FORM_START_DATE_ERROR: 'Start date must be today or in the future',
     FORM_END_DATE_ERROR: 'End date must be on or after the start date',
     FORM_OVERLAP_ERROR: 'You already have leave registered for part of this period.',
+    FORM_LEAVE_TYPE_ERROR: '', // filled in Task 9
   },
   LEAVE_MANAGEMENT: {
     EMPTY_STATE: 'No leave registered',

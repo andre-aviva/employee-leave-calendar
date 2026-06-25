@@ -30,6 +30,10 @@ class LeaveForm {
     return cy.get(element('LeaveForm_NotesInput'));
   }
 
+  static getNotesCharCounter() {
+    return cy.get(element('LeaveForm_NotesCharCounter'));
+  }
+
   static getSubmitButton() {
     return cy.get(element('LeaveForm_SubmitButton'));
   }
