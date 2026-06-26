@@ -9,7 +9,10 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// Requests use relative URLs so they go through the Vite dev-server proxy (see vite.config.ts),
+// which forwards /api and /health to the backend (Aspire service discovery under `aspire run`,
+// or VITE_API_URL when running standalone). Keeping requests same-origin means no CORS is needed.
+const API_BASE_URL = '';
 
 async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem('auth_token');
