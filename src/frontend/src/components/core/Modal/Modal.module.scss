@@ -1,0 +1,57 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5); // Using neutral-900 with opacity
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $space-4;
+}
+
+.modal {
+  background-color: $color-neutral-0;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  width: 100%;
+  max-width: rem-calc(480);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-6;
+  border-bottom: 1px solid $color-neutral-200;
+}
+
+.title {
+  @include typography.heading-lg;
+  margin: 0;
+}
+
+.closeButton {
+  color: $color-neutral-500;
+  cursor: pointer;
+  padding: $space-1;
+  border-radius: $radius-md;
+  transition: $transition-fast;
+
+  &:hover {
+    background-color: $color-neutral-100;
+    color: $color-neutral-900;
+  }
+}
+
+.content {
+  padding: $space-6;
+  overflow-y: auto;
+}

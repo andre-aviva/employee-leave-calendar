@@ -1,0 +1,50 @@
+@use "variables" as *;
+
+@mixin heading-2xl {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+  color: $color-neutral-900;
+}
+
+@mixin heading-xl {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+  color: $color-neutral-900;
+}
+
+@mixin heading-lg {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-tight;
+  color: $color-neutral-900;
+}
+
+@mixin body-emphasis {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-base;
+  color: $color-neutral-700;
+}
+
+@mixin body-base {
+  font-size: $font-size-base;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-base;
+  color: $color-neutral-700;
+}
+
+@mixin label-sm {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-base;
+  color: $color-neutral-500;
+}
+
+@mixin caption-xs {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-base;
+  color: $color-neutral-500;
+}

@@ -1,0 +1,25 @@
+@use "../../../styles/variables" as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.dateRow {
+  display: flex;
+  gap: $space-4;
+}
+
+.divider {
+  height: 1px;
+  background-color: $color-neutral-200;
+  margin: $space-2 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-3;
+  margin-top: $space-2;
+}

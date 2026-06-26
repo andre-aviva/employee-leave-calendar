@@ -1,0 +1,95 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  width: 100%;
+
+  &--disabled {
+    opacity: 0.5;
+  }
+}
+
+.label {
+  @include typography.label-sm;
+  color: $color-neutral-700;
+  font-weight: $font-weight-semibold;
+}
+
+.textareaWrapper {
+  display: flex;
+  border: 1px solid $color-neutral-200;
+  border-radius: $radius-md;
+  background-color: $color-neutral-0;
+  transition: $transition-fast;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: $color-primary-500;
+    box-shadow: $shadow-focus;
+    border-width: 2px;
+  }
+
+  &--error {
+    border-color: $color-error-500;
+    
+    &:focus-within {
+      border-color: $color-error-500;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  &--disabled {
+    background-color: $color-neutral-100;
+    border-color: $color-neutral-300;
+  }
+}
+
+.textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  @include typography.body-base;
+  color: $color-neutral-900;
+  width: 100%;
+  min-height: rem-calc(100);
+  padding: $space-3;
+  resize: vertical;
+  font-family: inherit;
+
+  &::placeholder {
+    color: $color-neutral-400;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    color: $color-neutral-400;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-4;
+}
+
+.description {
+  @include typography.caption-xs;
+  color: $color-neutral-500;
+}
+
+.error {
+  @include typography.caption-xs;
+  color: $color-error-500;
+}
+
+.charCount {
+  @include typography.caption-xs;
+  color: $color-neutral-500;
+  white-space: nowrap;
+}

@@ -1,0 +1,41 @@
+@use "variables" as *;
+@use "typography" as *;
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: $color-neutral-50;
+  color: $color-neutral-700;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  @include body-base;
+}
+
+h1 { @include heading-2xl; margin-bottom: $space-6; }
+h2 { @include heading-xl; margin-bottom: $space-5; }
+h3 { @include heading-lg; margin-bottom: $space-4; }
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+a {
+  color: $color-primary-500;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}

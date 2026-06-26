@@ -1,0 +1,86 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  width: 100%;
+
+  &--disabled {
+    opacity: 0.5;
+  }
+}
+
+.label {
+  @include typography.label-sm;
+  color: $color-neutral-700;
+  font-weight: $font-weight-semibold;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  height: rem-calc(40);
+  padding: 0 $space-3;
+  border: 1px solid $color-neutral-200;
+  border-radius: $radius-md;
+  background-color: $color-neutral-0;
+  transition: $transition-fast;
+  position: relative;
+
+  &:focus-within {
+    border-color: $color-primary-500;
+    box-shadow: $shadow-focus;
+    border-width: 2px;
+    padding: 0 calc($space-3 - 1px);
+  }
+
+  &--error {
+    border-color: $color-error-500;
+    
+    &:focus-within {
+      border-color: $color-error-500;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  &--disabled {
+    background-color: $color-neutral-100;
+    border-color: $color-neutral-300;
+  }
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  @include typography.body-base;
+  color: $color-neutral-900;
+  width: 100%;
+  cursor: pointer;
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+    cursor: pointer;
+  }
+}
+
+.icon {
+  pointer-events: none;
+  color: $color-neutral-500;
+  display: flex;
+  align-items: center;
+}
+
+.error {
+  @include typography.caption-xs;
+  color: $color-error-500;
+}

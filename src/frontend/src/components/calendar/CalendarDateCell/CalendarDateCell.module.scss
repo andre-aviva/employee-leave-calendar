@@ -1,0 +1,49 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.cell {
+  min-height: rem-calc(120);
+  background-color: $color-neutral-0;
+  border: 1px solid $color-neutral-200;
+  padding: $space-2;
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  transition: $transition-fast;
+
+  &--otherMonth {
+    background-color: $color-neutral-50;
+    color: $color-neutral-400;
+  }
+
+  &--today {
+    background-color: $color-primary-50;
+    border-color: $color-primary-200;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-1;
+}
+
+.dateNumber {
+  @include typography.label-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.todayBadge {
+  @include typography.caption-xs;
+  color: $color-primary-500;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+}
+
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: rem-calc(4);
+}

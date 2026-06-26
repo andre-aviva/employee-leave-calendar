@@ -1,0 +1,23 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  width: 100%;
+  border: 1px solid $color-neutral-200;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background-color: $color-neutral-200; // Gap color
+  gap: 1px;
+}
+
+.weekdayHeader {
+  @include typography.label-sm;
+  color: $color-neutral-500;
+  font-weight: $font-weight-semibold;
+  text-align: center;
+  padding: $space-3;
+  background-color: $color-neutral-0;
+}

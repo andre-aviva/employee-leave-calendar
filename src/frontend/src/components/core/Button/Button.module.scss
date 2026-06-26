@@ -1,0 +1,88 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/breakpoints" as breakpoints;
+@use "../../../styles/utils" as *;
+@use "../../../styles/typography" as typography;
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  border-radius: $radius-md;
+  transition: $transition-fast;
+  font-family: inherit;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: $shadow-focus;
+  }
+
+  // Variants
+  &--primary {
+    background-color: $color-primary-500;
+    color: $color-neutral-0;
+
+    @include breakpoints.media-hover {
+      &:not(:disabled) {
+        background-color: $color-primary-600;
+      }
+    }
+
+    &:active:not(:disabled) {
+      background-color: $color-primary-700;
+    }
+  }
+
+  &--secondary {
+    background-color: $color-neutral-0;
+    border-color: $color-neutral-200;
+    color: $color-neutral-700;
+
+    @include breakpoints.media-hover {
+      &:not(:disabled) {
+        background-color: $color-neutral-50;
+      }
+    }
+
+    &:active:not(:disabled) {
+      background-color: $color-neutral-100;
+    }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: $color-primary-500;
+
+    @include breakpoints.media-hover {
+      &:not(:disabled) {
+        background-color: $color-neutral-50;
+      }
+    }
+
+    &:active:not(:disabled) {
+      background-color: $color-neutral-100;
+    }
+  }
+
+  // Sizes
+  &--medium {
+    height: rem-calc(40);
+    padding: 0 $space-5;
+    font-size: $font-size-base;
+  }
+
+  &--small {
+    height: rem-calc(32);
+    padding: 0 $space-3;
+    font-size: $font-size-sm;
+  }
+}
