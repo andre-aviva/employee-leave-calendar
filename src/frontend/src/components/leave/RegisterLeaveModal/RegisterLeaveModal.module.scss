@@ -1,4 +1,5 @@
 @use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
 
 .form {
   display: flex;
@@ -15,6 +16,14 @@
   height: 1px;
   background-color: $color-neutral-200;
   margin: $space-2 0;
+}
+
+.formError {
+  @include typography.caption-xs;
+  color: $color-error-500;
+  background-color: $color-error-100;
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
 }
 
 .actions {
