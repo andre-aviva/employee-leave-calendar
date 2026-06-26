@@ -12,6 +12,8 @@ describe('My Leave', () => {
   let eddieToken: string;
 
   beforeEach(() => {
+    cy.intercept('GET', '**/api/me/leave').as('leaveFetch');
+
     apiSignIn(EMPLOYEE_EDDIE_EMPLOYEE.username, EMPLOYEE_EDDIE_EMPLOYEE.password).then(
       (t) => {
         eddieToken = t;
@@ -21,6 +23,7 @@ describe('My Leave', () => {
     SignInPage.visit();
     SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
     MyLeavePage.visit();
+    cy.wait('@leaveFetch');
   });
 
   afterEach(() => {
@@ -104,6 +107,7 @@ describe('My Leave', () => {
         endDate: isoDate(10),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.clickRegister();
       LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(7), endDate: isoDate(12) });
       LeaveForm.submit();
@@ -118,6 +122,7 @@ describe('My Leave', () => {
         endDate: isoDate(10),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.clickRegister();
       // start of new period == end of existing period — adjacency counts as overlap per business rules
       LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(10), endDate: isoDate(15) });
@@ -166,6 +171,7 @@ describe('My Leave', () => {
         endDate: isoDate(-5),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.checkEditButtonNotExist(0);
       MyLeavePage.checkDeleteButtonNotExist(0);
     });
@@ -178,6 +184,7 @@ describe('My Leave', () => {
         endDate: isoDate(2),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.checkEditButtonNotExist(0);
       MyLeavePage.checkDeleteButtonNotExist(0);
     });
@@ -189,6 +196,7 @@ describe('My Leave', () => {
         endDate: isoDate(9),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getEditButton(0).should('be.visible');
       MyLeavePage.getDeleteButton(0).should('be.visible');
     });
@@ -204,6 +212,7 @@ describe('My Leave', () => {
         endDate: isoDate(16),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
     });
 
     it('happy path — future registration → form closes, table refreshes', () => {
@@ -263,6 +272,7 @@ describe('My Leave', () => {
         endDate: isoDate(16),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
     });
 
     it('clicking delete opens Confirmation Dialog', () => {
@@ -294,6 +304,7 @@ describe('My Leave', () => {
       const endDate = isoDate(9);
       apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate, endDate });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getRow(0).should('contain.text', displayDate(startDate));
       MyLeavePage.getRow(0).should('contain.text', displayDate(endDate));
     });
@@ -302,6 +313,7 @@ describe('My Leave', () => {
       // isoDate(7) to isoDate(9) = 3 calendar days
       apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(7), endDate: isoDate(9) });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getDurationCell(0).should('contain.text', '3');
     });
   });
@@ -313,6 +325,7 @@ describe('My Leave', () => {
       apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(7), endDate: isoDate(9) });
       apiCreateMyLeave(eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(14), endDate: isoDate(16) });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getRow(0).should('contain.text', displayDate(isoDate(14)));
       MyLeavePage.getRow(1).should('contain.text', displayDate(isoDate(7)));
     });
@@ -346,6 +359,7 @@ describe('My Leave', () => {
         endDate,
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.clickEdit(0);
       LeaveForm.getLeaveTypeSelect().should('have.value', LEAVE_TYPE_VACATION.name);
       LeaveForm.getStartDateInput().should('have.value', startDate);
@@ -359,6 +373,7 @@ describe('My Leave', () => {
         endDate: isoDate(16),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.clickEdit(0);
       LeaveForm.getEmployeeSelect().should('not.exist');
       LeaveForm.cancel();
@@ -397,6 +412,7 @@ describe('My Leave', () => {
         description,
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getDescriptionCell(0).should('contain.text', description);
     });
 
@@ -409,6 +425,7 @@ describe('My Leave', () => {
         description,
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.clickEdit(0);
       LeaveForm.getDescriptionInput().should('have.value', description);
       LeaveForm.cancel();
@@ -454,6 +471,7 @@ describe('My Leave', () => {
         notes,
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getRow(0).realHover();
       cy.get('[role="tooltip"]').should('contain.text', notes);
     });
@@ -466,6 +484,7 @@ describe('My Leave', () => {
         // notes intentionally omitted
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getRow(0).realHover();
       cy.get('[role="tooltip"]').should('not.exist');
     });
@@ -479,6 +498,7 @@ describe('My Leave', () => {
         notes,
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.clickEdit(0);
       LeaveForm.getNotesInput().should('have.value', notes);
       LeaveForm.cancel();
@@ -500,6 +520,7 @@ describe('My Leave', () => {
         endDate: isoDate(19),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       // Row 0 is the later record (descending order — isoDate(15))
       MyLeavePage.clickEdit(0);
       LeaveForm.fillStartDate(isoDate(7));
@@ -541,6 +562,7 @@ describe('My Leave', () => {
       SignInPage.visit();
       SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
     });
 
     afterEach(() => {

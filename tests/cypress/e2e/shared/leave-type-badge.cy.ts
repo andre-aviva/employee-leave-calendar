@@ -29,7 +29,9 @@ describe('Leave Type Badge', () => {
       });
       SignInPage.visit();
       SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+      cy.intercept('GET', '**/api/me/leave').as('leaveFetch');
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
     });
 
     afterEach(() => {
@@ -49,6 +51,7 @@ describe('Leave Type Badge', () => {
         endDate: isoDate(9),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
       MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_SICK_LEAVE.name);
     });
@@ -61,6 +64,7 @@ describe('Leave Type Badge', () => {
         endDate: isoDate(9),
       });
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
       MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_OTHER.name);
     });
@@ -84,7 +88,9 @@ describe('Leave Type Badge', () => {
       });
       SignInPage.visit();
       SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+      cy.intercept('GET', '**/api/admin/leave*').as('adminFetch');
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
     });
 
     afterEach(() => {
@@ -105,6 +111,7 @@ describe('Leave Type Badge', () => {
         endDate: isoDate(7),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getLeaveTypeBadge(0).should('be.visible');
       AdminLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_PUBLIC_HOLIDAY.name);
     });

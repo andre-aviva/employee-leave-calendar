@@ -23,13 +23,17 @@ describe('Accessibility — WCAG 2.2 AA', () => {
     });
 
     it('/calendar passes WCAG 2.2 AA', () => {
+      cy.intercept('GET', '**/api/calendar*').as('calFetch');
       CalendarPage.visit();
+      cy.wait('@calFetch');
       cy.injectAxe();
       cy.checkA11y(undefined, WCAG_22_AA, logA11yViolations);
     });
 
     it('/my-leave passes WCAG 2.2 AA', () => {
+      cy.intercept('GET', '**/api/me/leave').as('leaveFetch');
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
       cy.injectAxe();
       cy.checkA11y(undefined, WCAG_22_AA, logA11yViolations);
     });
@@ -42,7 +46,9 @@ describe('Accessibility — WCAG 2.2 AA', () => {
     });
 
     it('/admin/leave passes WCAG 2.2 AA', () => {
+      cy.intercept('GET', '**/api/admin/leave*').as('adminFetch');
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       cy.injectAxe();
       cy.checkA11y(undefined, WCAG_22_AA, logA11yViolations);
     });

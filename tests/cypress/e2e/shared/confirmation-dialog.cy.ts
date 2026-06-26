@@ -26,7 +26,9 @@ describe('Confirmation Dialog', () => {
       });
       SignInPage.visit();
       SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
+      cy.intercept('GET', '**/api/me/leave').as('leaveFetch');
       MyLeavePage.visit();
+      cy.wait('@leaveFetch');
     });
 
     afterEach(() => {
@@ -69,7 +71,9 @@ describe('Confirmation Dialog', () => {
       });
       SignInPage.visit();
       SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
+      cy.intercept('GET', '**/api/admin/leave*').as('adminFetch');
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
     });
 
     afterEach(() => {

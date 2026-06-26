@@ -16,6 +16,8 @@ describe('Leave Management (Admin only)', () => {
   let adminToken: string;
 
   beforeEach(() => {
+    cy.intercept('GET', '**/api/admin/leave*').as('adminFetch');
+
     apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then(
       (t) => {
         adminToken = t;
@@ -25,6 +27,7 @@ describe('Leave Management (Admin only)', () => {
     SignInPage.visit();
     SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
     AdminLeavePage.visit();
+    cy.wait('@adminFetch');
   });
 
   afterEach(() => {
@@ -96,6 +99,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(10),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.clickAddLeave();
       LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(7), endDate: isoDate(12) });
@@ -112,6 +116,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(10),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.clickAddLeave();
       LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       // start of new period == end of existing period — adjacency counts as overlap
@@ -146,6 +151,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(10),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.clickAddLeave();
       LeaveForm.fillEmployee(EMPLOYEE_NORA_NEWBIE.name);
       LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(5), endDate: isoDate(10) });
@@ -167,6 +173,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(-28),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
     });
 
     it('edit form is pre-populated with the existing registration values', () => {
@@ -228,6 +235,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(19),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       // Edit the second record (later start date — table typically ordered desc) to overlap the first
       AdminLeavePage.clickEdit(0);
       LeaveForm.fillStartDate(isoDate(7));
@@ -249,6 +257,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(9),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
     });
 
     it('clicking delete opens Confirmation Dialog', () => {
@@ -288,6 +297,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(12),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
     });
 
     it('filter by employee — shows only matching records', () => {
@@ -346,6 +356,7 @@ describe('Leave Management (Admin only)', () => {
         endDate,
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getRow(0).should('contain.text', displayDate(startDate));
       AdminLeavePage.getRow(0).should('contain.text', displayDate(endDate));
     });
@@ -359,6 +370,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(7),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getDurationCell(0).should('contain.text', '3');
     });
   });
@@ -380,6 +392,7 @@ describe('Leave Management (Admin only)', () => {
         endDate: isoDate(16),
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getRow(0).should('contain.text', displayDate(isoDate(14)));
       AdminLeavePage.getRow(1).should('contain.text', displayDate(isoDate(5)));
     });
@@ -405,6 +418,7 @@ describe('Leave Management (Admin only)', () => {
         });
       }
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getNextPage().should('not.be.disabled');
     });
 
@@ -418,6 +432,7 @@ describe('Leave Management (Admin only)', () => {
         });
       }
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getNextPage().click();
       AdminLeavePage.getPrevPage().should('not.be.disabled');
       AdminLeavePage.filterByEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
@@ -436,6 +451,7 @@ describe('Leave Management (Admin only)', () => {
         });
       }
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getPaginationLabel().should('contain.text', '1');
       AdminLeavePage.getNextPage().click();
       AdminLeavePage.getPaginationLabel().should('contain.text', '2');
@@ -453,6 +469,7 @@ describe('Leave Management (Admin only)', () => {
         });
       }
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       // 21 records at page size 20 → 2 pages total. The label must show both.
       AdminLeavePage.getPaginationLabel().should('contain.text', '1'); // current page
       AdminLeavePage.getPaginationLabel().should('contain.text', '2'); // total pages
@@ -524,6 +541,7 @@ describe('Leave Management (Admin only)', () => {
         description,
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getDescriptionCell(0).should('contain.text', description);
     });
 
@@ -537,6 +555,7 @@ describe('Leave Management (Admin only)', () => {
         description,
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.clickEdit(0);
       LeaveForm.getDescriptionInput().should('have.value', description);
       LeaveForm.cancel();
@@ -586,6 +605,7 @@ describe('Leave Management (Admin only)', () => {
         notes,
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getRow(0).realHover();
       cy.get('[role="tooltip"]').should('contain.text', notes);
     });
@@ -599,6 +619,7 @@ describe('Leave Management (Admin only)', () => {
         // notes intentionally omitted
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.getRow(0).realHover();
       cy.get('[role="tooltip"]').should('not.exist');
     });
@@ -613,6 +634,7 @@ describe('Leave Management (Admin only)', () => {
         notes,
       });
       AdminLeavePage.visit();
+      cy.wait('@adminFetch');
       AdminLeavePage.clickEdit(0);
       LeaveForm.getNotesInput().should('have.value', notes);
       LeaveForm.cancel();
