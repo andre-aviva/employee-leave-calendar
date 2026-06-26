@@ -39,7 +39,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
             <Calendar size={16} />
           </div>
         </div>
-        {error && <span className={styles.error}>{error}</span>}
+        {error && <span className={styles.error} data-test={dataTest.replace(/\w+$/, 'Error')}>{error}</span>}
       </div>
     );
   }

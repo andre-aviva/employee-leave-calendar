@@ -59,7 +59,7 @@ export const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(
             <ChevronDown size={20} />
           </div>
         </div>
-        {error && <span className={styles.error}>{error}</span>}
+        {error && <span className={styles.error} data-test={`${dataTest.replace(/\w+$/, 'Error')}`}>{error}</span>}
         {!error && description && <span className={styles.description}>{description}</span>}
       </div>
     );

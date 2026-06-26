@@ -31,7 +31,7 @@ export function EmployeeLeaveChip({
       data-test="EmployeeLeaveChip"
     >
       <span className={styles.name}>{employeeName}</span>
-      {description && <span className={styles.description}>{description}</span>}
+      {description && <span className={styles.description} data-test="EmployeeLeaveChip_Description">{description}</span>}
     </div>
   );
 }
