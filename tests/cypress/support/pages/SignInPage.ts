@@ -35,9 +35,11 @@ class SignInPage {
   }
 
   static signIn(username: string, password: string) {
+    cy.intercept('POST', '**/api/auth/sign-in').as('signInRequest');
     this.fillUsername(username);
     this.fillPassword(password);
     this.submit();
+    cy.wait('@signInRequest');
   }
 
   static signInAs(employee: TestEmployee) {
