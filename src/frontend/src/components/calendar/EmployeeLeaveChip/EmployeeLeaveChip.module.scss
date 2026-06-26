@@ -1,0 +1,63 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  padding: $space-1 $space-2;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: $transition-fast;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+  width: 100%;
+
+  @include typography.caption-xs;
+}
+
+.name {
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+// Variants
+.vacation {
+  background-color: $color-success-100;
+  color: $color-success-500;
+  border-left-color: $color-success-500;
+}
+
+.sick {
+  background-color: $color-warning-100;
+  color: $color-warning-500;
+  border-left-color: $color-warning-500;
+}
+
+.holiday {
+  background-color: #e0e7ff;
+  color: #6366f1;
+  border-left-color: #6366f1;
+}
+
+.other {
+  background-color: $color-neutral-100;
+  color: $color-neutral-500;
+  border-left-color: $color-neutral-500;
+}
+
+.chip:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}

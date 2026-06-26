@@ -1,0 +1,15 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/grid" as grid;
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  @include grid.content-grid;
+  padding-top: $space-8;
+  padding-bottom: $space-12;
+  flex: 1;
+}

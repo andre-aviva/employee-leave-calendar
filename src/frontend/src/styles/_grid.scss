@@ -1,0 +1,22 @@
+@use "variables" as *;
+@use "breakpoints" as bp;
+
+@mixin content-grid {
+  display: grid;
+  grid-template-columns: 
+    [full-start] minmax($space-4, 1fr) 
+    [content-start] min(100% - ($space-8), $bp-xl) [content-end] 
+    minmax($space-4, 1fr) [full-end];
+
+  & > * {
+    grid-column: content;
+  }
+
+  & > .full-bleed {
+    grid-column: full;
+  }
+}
+
+.content-grid {
+  @include content-grid;
+}

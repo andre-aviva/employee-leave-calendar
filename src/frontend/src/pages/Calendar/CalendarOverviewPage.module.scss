@@ -1,0 +1,51 @@
+@use "../../styles/variables" as *;
+@use "../../styles/typography" as typography;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-6;
+}
+
+.title {
+  @include typography.heading-2xl;
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+}
+
+.currentMonth {
+  @include typography.heading-lg;
+  min-width: rem-calc(180);
+  text-align: center;
+}
+
+.legend {
+  display: flex;
+  gap: $space-6;
+  margin-bottom: $space-6;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  @include typography.label-sm;
+}
+
+.legendColor {
+  width: rem-calc(12);
+  height: rem-calc(12);
+  border-radius: $radius-full;
+
+  &.vacation { background-color: $color-leave-vacation; }
+  &.sickleave { background-color: $color-leave-sick; }
+  &.publicholiday { background-color: $color-leave-public-holiday; }
+  &.other { background-color: $color-leave-other; }
+}

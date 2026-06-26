@@ -1,0 +1,14 @@
+@use "../../styles/variables" as *;
+@use "../../styles/typography" as typography;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-8;
+}
+
+.title {
+  @include typography.heading-2xl;
+  margin: 0;
+}

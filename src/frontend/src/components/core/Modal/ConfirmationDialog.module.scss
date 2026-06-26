@@ -1,0 +1,20 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.message {
+  @include typography.body-base;
+  color: $color-neutral-700;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-3;
+}

@@ -1,0 +1,55 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  padding: $space-1 $space-2;
+  border-radius: $radius-full;
+  @include typography.caption-xs;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+
+  // Dot indicator
+  &::before {
+    content: '';
+    display: block;
+    width: rem-calc(8);
+    height: rem-calc(8);
+    border-radius: 50%;
+  }
+
+  // Variants (Leave Types)
+  &--vacation {
+    background-color: $color-success-100;
+    color: $color-success-500;
+    &::before { background-color: $color-success-500; }
+  }
+
+  &--sick {
+    background-color: $color-warning-100;
+    color: $color-warning-500;
+    &::before { background-color: $color-warning-500; }
+  }
+
+  &--holiday {
+    background-color: #e0e7ff; // From Figma: holiday background
+    color: #6366f1; // From Figma: holiday accent
+    &::before { background-color: #6366f1; }
+  }
+
+  &--other {
+    background-color: $color-neutral-100;
+    color: $color-neutral-400;
+    &::before { background-color: $color-neutral-400; }
+  }
+
+  // Generic variants
+  &--neutral {
+    background-color: $color-neutral-100;
+    color: $color-neutral-700;
+    &::before { background-color: $color-neutral-500; }
+  }
+}

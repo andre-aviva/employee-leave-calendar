@@ -1,0 +1,69 @@
+@use "../../../styles/variables" as *;
+@use "../../../styles/typography" as typography;
+@use "../../../styles/utils" as *;
+@use "../../../styles/breakpoints" as breakpoints;
+
+.tableContainer {
+  width: 100%;
+  background-color: $color-neutral-0;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: rem-calc(800); // Ensure table doesn't get too squeezed
+}
+
+.th {
+  @include typography.label-sm;
+  color: $color-neutral-500;
+  text-align: left;
+  padding: $space-4;
+  border-bottom: 1px solid $color-neutral-200;
+  background-color: $color-neutral-0;
+  white-space: nowrap;
+}
+
+.td {
+  @include typography.body-base;
+  color: $color-neutral-900;
+  padding: $space-3 $space-4;
+  border-bottom: 1px solid $color-neutral-100;
+  vertical-align: middle;
+}
+
+.tr {
+  transition: $transition-fast;
+
+  @include breakpoints.media-hover {
+    background-color: $color-neutral-50;
+  }
+}
+
+.cellNumber { width: rem-calc(60); text-align: center; }
+.cellEmployee { width: rem-calc(200); }
+.cellLeaveType { width: rem-calc(200); }
+.cellFrom { width: rem-calc(160); }
+.cellTo { width: rem-calc(160); }
+.cellDuration { width: rem-calc(140); }
+.cellDescription { width: rem-calc(320); }
+.cellActions { 
+  width: rem-calc(192); 
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  gap: $space-2;
+  justify-content: flex-end;
+}
+
+.emptyState {
+  padding: $space-8;
+  text-align: center;
+  color: $color-neutral-500;
+  @include typography.body-base;
+}

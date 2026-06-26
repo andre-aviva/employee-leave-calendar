@@ -1,0 +1,39 @@
+@use "variables" as *;
+
+@mixin sm {
+  @media (min-width: #{$bp-sm}) {
+    @content;
+  }
+}
+
+@mixin md {
+  @media (min-width: #{$bp-md}) {
+    @content;
+  }
+}
+
+@mixin lg {
+  @media (min-width: #{$bp-lg}) {
+    @content;
+  }
+}
+
+@mixin xl {
+  @media (min-width: #{$bp-xl}) {
+    @content;
+  }
+}
+
+@mixin xxl {
+  @media (min-width: #{$bp-2xl}) {
+    @content;
+  }
+}
+
+@mixin media-hover {
+  @media (hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+}
