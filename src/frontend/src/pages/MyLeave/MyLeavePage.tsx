@@ -4,13 +4,13 @@ import { LeaveDataTable } from '../../components/leave/LeaveDataTable/LeaveDataT
 import { Button } from '../../components/core/Button/Button';
 import { RegisterLeaveModal } from '../../components/leave/RegisterLeaveModal/RegisterLeaveModal';
 import { ConfirmationDialog } from '../../components/core/Modal/ConfirmationDialog';
-import { leaveApi } from '../../api/leave';
+import { leaveApi, MY_LEAVE_PATH } from '../../api/leave';
 import type { RegisterLeaveRequest } from '../../api/leave';
 import styles from './MyLeavePage.module.scss';
 import { resources } from './MyLeavePage.resources';
 
 export function MyLeavePage() {
-  const { data: leaveRegistrations = [], isLoading } = useSWR('/api/my/leave', () => leaveApi.listMyLeave());
+  const { data: leaveRegistrations = [], isLoading } = useSWR(MY_LEAVE_PATH, () => leaveApi.listMyLeave());
   const { mutate } = useSWRConfig();
 
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -26,7 +26,7 @@ export function MyLeavePage() {
       } else {
         await leaveApi.registerMyLeave(data);
       }
-      await mutate('/api/my/leave');
+      await mutate(MY_LEAVE_PATH);
       setIsRegisterModalOpen(false);
       setSelectedLeaveId(null);
     } catch (e) {
@@ -42,7 +42,7 @@ export function MyLeavePage() {
     setIsSubmitting(true);
     try {
       await leaveApi.deleteMyLeave(selectedLeaveId);
-      await mutate('/api/my/leave');
+      await mutate(MY_LEAVE_PATH);
       setIsDeleteModalOpen(false);
       setSelectedLeaveId(null);
     } catch (e) {

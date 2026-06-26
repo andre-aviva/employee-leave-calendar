@@ -30,9 +30,13 @@ export type CalendarEntryDto = {
   endDate: string;
 };
 
+// Backend serves the current user's leave under /api/me/leave (see Leave/*Endpoint.cs).
+// Exported so SWR cache keys reference the same path and cannot drift from the requests.
+export const MY_LEAVE_PATH = '/api/me/leave';
+
 export const leaveApi = {
-  listMyLeave: () => client.get<MyLeaveDto[]>('/api/my/leave'),
-  registerMyLeave: (data: RegisterLeaveRequest) => client.post('/api/my/leave', data),
-  editMyLeave: (id: string, data: RegisterLeaveRequest) => client.put(`/api/my/leave/${id}`, data),
-  deleteMyLeave: (id: string) => client.delete(`/api/my/leave/${id}`),
+  listMyLeave: () => client.get<MyLeaveDto[]>(MY_LEAVE_PATH),
+  registerMyLeave: (data: RegisterLeaveRequest) => client.post(MY_LEAVE_PATH, data),
+  editMyLeave: (id: string, data: RegisterLeaveRequest) => client.put(`${MY_LEAVE_PATH}/${id}`, data),
+  deleteMyLeave: (id: string) => client.delete(`${MY_LEAVE_PATH}/${id}`),
 };
