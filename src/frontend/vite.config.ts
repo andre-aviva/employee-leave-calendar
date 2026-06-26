@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    server: { proxy },
+    // Fixed port so the dev URL is always the same. This governs standalone
+    // `npm run dev`; under Aspire the AppHost passes `--port 5173`, which wins
+    // over this value, so keep it in sync with the "web" endpoint in AppHost.cs.
+    // strictPort fails loudly instead of silently drifting to another port.
+    server: { port: 5173, strictPort: true, proxy },
   }
 })
