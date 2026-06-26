@@ -14,6 +14,9 @@ describe('My Leave', () => {
   beforeEach(() => {
     cy.intercept('GET', '**/api/me/leave').as('leaveFetch');
 
+    apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then((t) => {
+      apiCleanupAdminLeave(t);
+    });
     apiSignIn(EMPLOYEE_EDDIE_EMPLOYEE.username, EMPLOYEE_EDDIE_EMPLOYEE.password).then(
       (t) => {
         eddieToken = t;

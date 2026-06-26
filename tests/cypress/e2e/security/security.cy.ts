@@ -3,7 +3,7 @@ import NavigationBar from '../../support/pages/NavigationBar';
 import MyLeavePage from '../../support/pages/MyLeavePage';
 import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
-import { apiSignIn, apiCreateMyLeave, apiDeleteMyLeave } from '../../support/helpers/api';
+import { apiSignIn, apiCreateMyLeave, apiDeleteMyLeave, apiCleanupAdminLeave } from '../../support/helpers/api';
 import { isoDate } from '../../support/helpers/dates';
 
 describe('Security (E2E smoke)', () => {
@@ -33,6 +33,9 @@ describe('Security (E2E smoke)', () => {
   });
 
   it("Employee cannot see another employee's leave registrations on My Leave page", () => {
+    apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then((t) => {
+      apiCleanupAdminLeave(t);
+    });
     apiSignIn(EMPLOYEE_NORA_NEWBIE.username, EMPLOYEE_NORA_NEWBIE.password).then((t) => {
       noraToken = t;
       apiCreateMyLeave(noraToken, {
@@ -42,9 +45,11 @@ describe('Security (E2E smoke)', () => {
       }).then((id) => { noraLeaveId = id; });
     });
 
+    cy.intercept('GET', '**/api/me/leave').as('leaveFetch');
     SignInPage.visit();
     SignInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
     MyLeavePage.visit();
+    cy.wait('@leaveFetch');
     MyLeavePage.checkEmptyState();
   });
 
