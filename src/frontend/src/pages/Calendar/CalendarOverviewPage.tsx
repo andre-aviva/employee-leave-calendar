@@ -8,6 +8,7 @@ import { Button } from '../../components/core/Button/Button';
 import { client } from '../../api/client';
 import { referenceApi } from '../../api/reference';
 import type { CalendarEntryDto } from '../../api/leave';
+import { toIsoDate } from '../../utils/date';
 import styles from './CalendarOverviewPage.module.scss';
 import { resources } from './CalendarOverviewPage.resources';
 
@@ -19,9 +20,9 @@ export function CalendarOverviewPage() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Calculate range for fetching
-  const from = new Date(year, month, 1).toISOString().split('T')[0];
-  const to = new Date(year, month + 1, 0).toISOString().split('T')[0];
+  // Calculate range for fetching (local calendar dates, not UTC — see toIsoDate)
+  const from = toIsoDate(new Date(year, month, 1));
+  const to = toIsoDate(new Date(year, month + 1, 0));
 
   const { data: calendarData = [], isLoading } = useSWR(
     `/api/calendar?from=${from}&to=${to}`,
@@ -52,7 +53,7 @@ export function CalendarOverviewPage() {
   const renderDay = (date: Date, isOtherMonth: boolean) => {
     if (isOtherMonth) return null;
 
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = toIsoDate(date);
     const dayEntries = filteredData.filter((entry) => {
       return dateStr >= entry.startDate && dateStr <= entry.endDate;
     });
