@@ -47,7 +47,7 @@ export function RegisterLeaveModal({
   const notesValue = watch('notes') || '';
 
   const leaveTypeOptions = leaveTypes
-    .filter((t) => isAdmin || t.isRegisterableByEmployee)
+    .filter((t) => isAdmin || t.registerableBy === 'Employee')
     .map((t) => ({ value: t.id, label: t.name }));
 
   const employeeOptions = employees.map((e) => ({ value: e.id, label: e.name }));
