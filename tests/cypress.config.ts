@@ -4,9 +4,10 @@ import { createHtmlReport } from 'axe-html-reporter';
 
 export default defineConfig({
   chromeWebSecurity: false,
+  allowCypressEnv: false,
   taskTimeout: 180000,
   video: false,
-  retries: { openMode: 0, runMode: 2 },
+  retries: { openMode: 0, runMode: 0 },
   viewportWidth: 1920,
   viewportHeight: 1080,
   e2e: {
