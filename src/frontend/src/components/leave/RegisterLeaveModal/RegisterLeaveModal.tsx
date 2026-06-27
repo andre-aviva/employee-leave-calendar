@@ -112,7 +112,6 @@ export function RegisterLeaveModal({
               required: resources.errorRequired,
               validate: isAdmin ? undefined : (value) => value >= today || resources.errorStartDatePast,
             })}
-            min={isAdmin ? undefined : today}
             error={errors.startDate?.message}
             data-test="LeaveForm_StartDateInput"
           />
