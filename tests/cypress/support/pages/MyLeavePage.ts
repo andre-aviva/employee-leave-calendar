@@ -79,8 +79,13 @@ class MyLeavePage {
       .should('not.exist');
   }
 
-  static getLeaveTypeBadge(index: number) {
-    return cy.get(element('MyLeave_TableRow')).eq(index).find(element('LeaveTypeBadge'));
+  static getLeaveTypeBadge(index: number, leaveTypeName: string) {
+    const n = leaveTypeName.toLowerCase();
+    const variant = n.includes('vacation') ? 'vacation'
+      : n.includes('sick') ? 'sick'
+      : n.includes('holiday') ? 'holiday'
+      : 'other';
+    return cy.get(element('MyLeave_TableRow')).eq(index).find(element(`Badge_${variant}`));
   }
 
   static getDurationCell(index: number) {

@@ -116,8 +116,13 @@ class AdminLeavePage {
     this.getTableRows().should('have.length', n);
   }
 
-  static getLeaveTypeBadge(index: number) {
-    return cy.get(element('AdminLeave_TableRow')).eq(index).find(element('LeaveTypeBadge'));
+  static getLeaveTypeBadge(index: number, leaveTypeName: string) {
+    const n = leaveTypeName.toLowerCase();
+    const variant = n.includes('vacation') ? 'vacation'
+      : n.includes('sick') ? 'sick'
+      : n.includes('holiday') ? 'holiday'
+      : 'other';
+    return cy.get(element('AdminLeave_TableRow')).eq(index).find(element(`Badge_${variant}`));
   }
 }
 

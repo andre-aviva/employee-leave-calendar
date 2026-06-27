@@ -42,8 +42,8 @@ describe('Leave Type Badge', () => {
     });
 
     it('badge is visible and shows the correct leave type name', () => {
-      MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_VACATION.name);
+      MyLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_VACATION.name).should('be.visible');
+      MyLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_VACATION.name).should('contain.text', LEAVE_TYPE_VACATION.name);
     });
 
     it('Sick Leave badge is visible and shows the correct leave type name', () => {
@@ -55,8 +55,8 @@ describe('Leave Type Badge', () => {
       });
       MyLeavePage.visit();
       cy.wait('@leaveFetch');
-      MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_SICK_LEAVE.name);
+      MyLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_SICK_LEAVE.name).should('be.visible');
+      MyLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_SICK_LEAVE.name).should('contain.text', LEAVE_TYPE_SICK_LEAVE.name);
     });
 
     it('Other badge is visible and shows the correct leave type name', () => {
@@ -68,8 +68,8 @@ describe('Leave Type Badge', () => {
       });
       MyLeavePage.visit();
       cy.wait('@leaveFetch');
-      MyLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      MyLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_OTHER.name);
+      MyLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_OTHER.name).should('be.visible');
+      MyLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_OTHER.name).should('contain.text', LEAVE_TYPE_OTHER.name);
     });
   });
 
@@ -101,8 +101,8 @@ describe('Leave Type Badge', () => {
     });
 
     it('badge is visible and shows the correct leave type name', () => {
-      AdminLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      AdminLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_VACATION.name);
+      AdminLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_VACATION.name).should('be.visible');
+      AdminLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_VACATION.name).should('contain.text', LEAVE_TYPE_VACATION.name);
     });
 
     it('Public Holiday badge is visible and shows the correct leave type name', () => {
@@ -115,8 +115,8 @@ describe('Leave Type Badge', () => {
       });
       AdminLeavePage.visit();
       cy.wait('@adminFetch');
-      AdminLeavePage.getLeaveTypeBadge(0).should('be.visible');
-      AdminLeavePage.getLeaveTypeBadge(0).should('contain.text', LEAVE_TYPE_PUBLIC_HOLIDAY.name);
+      AdminLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_PUBLIC_HOLIDAY.name).should('be.visible');
+      AdminLeavePage.getLeaveTypeBadge(0, LEAVE_TYPE_PUBLIC_HOLIDAY.name).should('contain.text', LEAVE_TYPE_PUBLIC_HOLIDAY.name);
     });
   });
 });
