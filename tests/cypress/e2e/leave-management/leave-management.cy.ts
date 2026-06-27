@@ -7,7 +7,11 @@ import {
   EMPLOYEE_EDDIE_EMPLOYEE,
   EMPLOYEE_NORA_NEWBIE,
 } from '../../support/testdata/employees';
-import { LEAVE_TYPE_VACATION, LEAVE_TYPE_PUBLIC_HOLIDAY, LEAVE_TYPE_OTHER } from '../../support/testdata/leaveTypes';
+import {
+  LEAVE_TYPE_VACATION,
+  LEAVE_TYPE_PUBLIC_HOLIDAY,
+  LEAVE_TYPE_OTHER,
+} from '../../support/testdata/leaveTypes';
 import { TEXTS } from '../../support/constants';
 import { apiSignIn, apiAdminCreateLeave, apiCleanupAdminLeave } from '../../support/helpers/api';
 import { isoDate, displayDate } from '../../support/helpers/dates';
@@ -18,12 +22,10 @@ describe('Leave Management (Admin only)', () => {
   beforeEach(() => {
     cy.intercept('GET', '**/api/admin/leave*').as('adminFetch');
 
-    apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then(
-      (t) => {
-        adminToken = t;
-        apiCleanupAdminLeave(t);
-      },
-    );
+    apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then((t) => {
+      adminToken = t;
+      apiCleanupAdminLeave(t);
+    });
     SignInPage.visit();
     SignInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
     AdminLeavePage.visit();
@@ -65,8 +67,12 @@ describe('Leave Management (Admin only)', () => {
     it('any employee, any leave type including Public Holiday → table refreshes', () => {
       AdminLeavePage.clickAddLeave();
       LeaveForm.get().should('be.visible');
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
-      LeaveForm.fill({ leaveType: LEAVE_TYPE_PUBLIC_HOLIDAY, startDate: isoDate(7), endDate: isoDate(9) });
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_PUBLIC_HOLIDAY,
+        startDate: isoDate(7),
+        endDate: isoDate(9),
+      });
       LeaveForm.submit();
       LeaveForm.get().should('not.exist');
       AdminLeavePage.checkRowCount(1);
@@ -75,7 +81,7 @@ describe('Leave Management (Admin only)', () => {
     it('1-day leave (start == end) → succeeds', () => {
       const singleDay = isoDate(5);
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: singleDay, endDate: singleDay });
       LeaveForm.submit();
       LeaveForm.get().should('not.exist');
@@ -84,8 +90,12 @@ describe('Leave Management (Admin only)', () => {
 
     it('end date before start date → FORM_END_DATE_ERROR below End Date field', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
-      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(7), endDate: isoDate(5) });
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(5),
+      });
       LeaveForm.submit();
       LeaveForm.checkEndDateError(TEXTS.LEAVE_MANAGEMENT.FORM_END_DATE_ERROR);
       LeaveForm.get().should('be.visible');
@@ -101,8 +111,12 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.visit();
       cy.wait('@adminFetch');
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
-      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(7), endDate: isoDate(12) });
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(7),
+        endDate: isoDate(12),
+      });
       LeaveForm.submit();
       LeaveForm.checkFormError(TEXTS.LEAVE_MANAGEMENT.FORM_OVERLAP_ERROR);
       LeaveForm.get().should('be.visible');
@@ -118,9 +132,13 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.visit();
       cy.wait('@adminFetch');
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       // start of new period == end of existing period — adjacency counts as overlap
-      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(10), endDate: isoDate(15) });
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(10),
+        endDate: isoDate(15),
+      });
       LeaveForm.submit();
       LeaveForm.checkFormError(TEXTS.LEAVE_MANAGEMENT.FORM_OVERLAP_ERROR);
       LeaveForm.get().should('be.visible');
@@ -136,8 +154,12 @@ describe('Leave Management (Admin only)', () => {
 
     it('Admin can create leave with a past start date', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
-      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(-14), endDate: isoDate(-12) });
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(-14),
+        endDate: isoDate(-12),
+      });
       LeaveForm.submit();
       LeaveForm.get().should('not.exist');
       AdminLeavePage.checkRowCount(1);
@@ -153,8 +175,12 @@ describe('Leave Management (Admin only)', () => {
       AdminLeavePage.visit();
       cy.wait('@adminFetch');
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_NORA_NEWBIE.name);
-      LeaveForm.fill({ leaveType: LEAVE_TYPE_VACATION, startDate: isoDate(5), endDate: isoDate(10) });
+      LeaveForm.selectEmployee(EMPLOYEE_NORA_NEWBIE.name);
+      LeaveForm.fill({
+        leaveType: LEAVE_TYPE_VACATION,
+        startDate: isoDate(5),
+        endDate: isoDate(10),
+      });
       LeaveForm.submit();
       LeaveForm.get().should('not.exist');
       AdminLeavePage.checkRowCount(2);
@@ -215,7 +241,6 @@ describe('Leave Management (Admin only)', () => {
       LeaveForm.get().should('not.exist');
       AdminLeavePage.checkRowCount(1);
     });
-
   });
 
   // ── Edit — overlap validation ─────────────────────────────────────────────────
@@ -500,7 +525,7 @@ describe('Leave Management (Admin only)', () => {
   describe('Other leave type', () => {
     it('Admin can create leave for any employee using the Other leave type', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fill({
         leaveType: LEAVE_TYPE_OTHER,
         startDate: isoDate(7),
@@ -517,7 +542,7 @@ describe('Leave Management (Admin only)', () => {
   describe('description field', () => {
     it('description is optional — form submits and table refreshes when description is filled', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fill({
         leaveType: LEAVE_TYPE_VACATION,
         startDate: isoDate(7),
@@ -531,7 +556,7 @@ describe('Leave Management (Admin only)', () => {
 
     it('description field enforces max 50 characters', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fillDescription('a'.repeat(51));
       LeaveForm.getDescriptionInput().should('have.value', 'a'.repeat(50));
       LeaveForm.cancel();
@@ -573,7 +598,7 @@ describe('Leave Management (Admin only)', () => {
   describe('notes field', () => {
     it('notes is optional — Admin form submits and table refreshes when notes are filled', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fill({
         leaveType: LEAVE_TYPE_VACATION,
         startDate: isoDate(7),
@@ -587,7 +612,7 @@ describe('Leave Management (Admin only)', () => {
 
     it('notes field enforces max 500 characters in the Admin form', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fillNotes('a'.repeat(501));
       LeaveForm.getNotesInput().should('have.value', 'a'.repeat(500));
       LeaveForm.cancel();
@@ -595,7 +620,7 @@ describe('Leave Management (Admin only)', () => {
 
     it('notes character counter reflects the number of characters typed in the Admin form', () => {
       AdminLeavePage.clickAddLeave();
-      LeaveForm.fillEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      LeaveForm.selectEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
       LeaveForm.fillNotes('a'.repeat(350));
       LeaveForm.getNotesCharCounter().should('contain.text', '350');
       LeaveForm.cancel();
