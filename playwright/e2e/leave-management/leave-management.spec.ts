@@ -207,6 +207,33 @@ test.describe('Leave Management (Admin only)', () => {
     });
   });
 
+  test.describe('edit — overlap validation', () => {
+    test('editing a registration to overlap a different one for the same employee → OVERLAP error', async ({ request, page, adminLeavePage, leaveForm }) => {
+      await apiAdminCreateLeave(request, adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(5),
+        endDate: isoDate(9),
+      });
+      await apiAdminCreateLeave(request, adminToken, {
+        employeeId: EMPLOYEE_EDDIE_EMPLOYEE.id,
+        leaveTypeId: LEAVE_TYPE_VACATION.id,
+        startDate: isoDate(14),
+        endDate: isoDate(16),
+      });
+      const resp = page.waitForResponse('**/api/admin/leave*');
+      await adminLeavePage.visit();
+      await resp;
+      await adminLeavePage.clickEdit(0);
+      await leaveForm.fillStartDate(isoDate(7));
+      await leaveForm.fillEndDate(isoDate(15));
+      await leaveForm.submit();
+      await leaveForm.checkFormError(TEXTS.LEAVE_MANAGEMENT.FORM_OVERLAP_ERROR);
+      await expect(leaveForm.get()).toBeVisible();
+      await leaveForm.cancel();
+    });
+  });
+
   test.describe('delete leave', () => {
     test.beforeEach(async ({ request, page, adminLeavePage }) => {
       await apiAdminCreateLeave(request, adminToken, {
@@ -291,6 +318,13 @@ test.describe('Leave Management (Admin only)', () => {
     test('date range filter with no matching records shows empty state', async ({ adminLeavePage }) => {
       await adminLeavePage.filterByDateRange(isoDate(20), isoDate(25));
       await adminLeavePage.checkEmptyState();
+    });
+
+    test('changing the employee filter triggers a new API fetch', async ({ page, adminLeavePage }) => {
+      const fetchResp = page.waitForResponse('**/api/admin/leave*');
+      await adminLeavePage.filterByEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      await fetchResp;
+      await expect(adminLeavePage.getRow(0)).toContainText(EMPLOYEE_EDDIE_EMPLOYEE.name);
     });
   });
 
@@ -388,11 +422,54 @@ test.describe('Leave Management (Admin only)', () => {
       await adminLeavePage.getNextPage().click();
       await expect(adminLeavePage.getPaginationLabel()).toContainText('2');
     });
+
+    test('applying a filter resets pagination to page 1', async ({ request, page, adminLeavePage }) => {
+      const employees = [EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE, EMPLOYEE_ALICE_ADMIN];
+      for (let i = 0; i < 21; i++) {
+        const emp = employees[i % employees.length];
+        await apiAdminCreateLeave(request, adminToken, {
+          employeeId: emp.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(i + 1),
+          endDate: isoDate(i + 1),
+        });
+      }
+      const resp = page.waitForResponse('**/api/admin/leave*');
+      await adminLeavePage.visit();
+      await resp;
+      await adminLeavePage.getNextPage().click();
+      await expect(adminLeavePage.getPaginationLabel()).toContainText('2');
+      const filterResp = page.waitForResponse('**/api/admin/leave*');
+      await adminLeavePage.filterByEmployee(EMPLOYEE_EDDIE_EMPLOYEE.name);
+      await filterResp;
+      await expect(adminLeavePage.getPrevPage()).toBeDisabled();
+    });
+
+    test('pagination label shows current page and total page count', async ({ request, page, adminLeavePage }) => {
+      const employees = [EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE, EMPLOYEE_ALICE_ADMIN];
+      for (let i = 0; i < 21; i++) {
+        const emp = employees[i % employees.length];
+        await apiAdminCreateLeave(request, adminToken, {
+          employeeId: emp.id,
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(i + 1),
+          endDate: isoDate(i + 1),
+        });
+      }
+      const resp = page.waitForResponse('**/api/admin/leave*');
+      await adminLeavePage.visit();
+      await resp;
+      const label = adminLeavePage.getPaginationLabel();
+      await expect(label).toContainText('1');
+      await adminLeavePage.getNextPage().click();
+      await expect(label).toContainText('2');
+    });
   });
 
   test.describe('route guard', () => {
     test('Employee navigating to /admin/leave is redirected', async ({ page, signInPage }) => {
       await page.context().clearCookies();
+      await page.evaluate(() => localStorage.clear());
       await signInPage.visit();
       await signInPage.signInAs(EMPLOYEE_EDDIE_EMPLOYEE);
       await page.goto('/admin/leave');
