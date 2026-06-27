@@ -3,7 +3,7 @@ import NavigationBar from '../../support/pages/NavigationBar';
 import MyLeavePage from '../../support/pages/MyLeavePage';
 import { EMPLOYEE_ALICE_ADMIN, EMPLOYEE_EDDIE_EMPLOYEE, EMPLOYEE_NORA_NEWBIE } from '../../support/testdata/employees';
 import { LEAVE_TYPE_VACATION } from '../../support/testdata/leaveTypes';
-import { apiSignIn, apiCreateMyLeave, apiDeleteMyLeave, apiCleanupAdminLeave } from '../../support/helpers/api';
+import { apiSignIn, apiCreateMyLeave, apiDeleteMyLeave, apiCleanupAdminLeave, apiAdminCreateLeave, apiAdminDeleteLeave } from '../../support/helpers/api';
 import { isoDate } from '../../support/helpers/dates';
 
 describe('Security (E2E smoke)', () => {
@@ -133,6 +133,73 @@ describe('Security (E2E smoke)', () => {
         },
         failOnStatusCode: false,
       }).its('status').should('equal', 403);
+    });
+
+    it('PUT /api/admin/leave/:id — employee-role token returns 403', () => {
+      cy.request({
+        method: 'PUT',
+        url: '/api/admin/leave/00000000-0000-0000-0000-000000000000',
+        headers: { Authorization: `Bearer ${eddieApiToken}` },
+        body: {
+          leaveTypeId: LEAVE_TYPE_VACATION.id,
+          startDate: isoDate(7),
+          endDate: isoDate(9),
+        },
+        failOnStatusCode: false,
+      }).its('status').should('equal', 403);
+    });
+
+    it('DELETE /api/admin/leave/:id — employee-role token returns 403', () => {
+      cy.request({
+        method: 'DELETE',
+        url: '/api/admin/leave/00000000-0000-0000-0000-000000000000',
+        headers: { Authorization: `Bearer ${eddieApiToken}` },
+        failOnStatusCode: false,
+      }).its('status').should('equal', 403);
+    });
+
+    describe('cross-employee data isolation', () => {
+      let aliceToken: string;
+      let noraLeaveId: string;
+
+      before(() => {
+        apiSignIn(EMPLOYEE_ALICE_ADMIN.username, EMPLOYEE_ALICE_ADMIN.password).then((t) => {
+          aliceToken = t;
+          apiAdminCreateLeave(aliceToken, {
+            employeeId: EMPLOYEE_NORA_NEWBIE.id,
+            leaveTypeId: LEAVE_TYPE_VACATION.id,
+            startDate: isoDate(21),
+            endDate: isoDate(23),
+          }).then((id) => { noraLeaveId = id; });
+        });
+      });
+
+      after(() => {
+        if (aliceToken && noraLeaveId) apiAdminDeleteLeave(aliceToken, noraLeaveId);
+      });
+
+      it('PUT /api/me/leave/:id — accessing another employee\'s record returns 404', () => {
+        cy.request({
+          method: 'PUT',
+          url: `/api/me/leave/${noraLeaveId}`,
+          headers: { Authorization: `Bearer ${eddieApiToken}` },
+          body: {
+            leaveTypeId: LEAVE_TYPE_VACATION.id,
+            startDate: isoDate(21),
+            endDate: isoDate(23),
+          },
+          failOnStatusCode: false,
+        }).its('status').should('equal', 404);
+      });
+
+      it('DELETE /api/me/leave/:id — accessing another employee\'s record returns 404', () => {
+        cy.request({
+          method: 'DELETE',
+          url: `/api/me/leave/${noraLeaveId}`,
+          headers: { Authorization: `Bearer ${eddieApiToken}` },
+          failOnStatusCode: false,
+        }).its('status').should('equal', 404);
+      });
     });
   });
 });
