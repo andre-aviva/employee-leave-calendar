@@ -9,6 +9,7 @@ import { Button } from '../../core/Button/Button';
 import { referenceApi } from '../../../api/reference';
 import { employeeApi } from '../../../api/employees';
 import type { AdminCreateLeaveRequest } from '../../../api/admin';
+import { ApiError } from '../../../api/client';
 import styles from './RegisterLeaveModal.module.scss';
 import { resources } from './RegisterLeaveModal.resources';
 
@@ -36,6 +37,8 @@ export function RegisterLeaveModal({
     register,
     handleSubmit,
     watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<AdminCreateLeaveRequest>({
     defaultValues: initialData || {
@@ -44,7 +47,34 @@ export function RegisterLeaveModal({
     },
   });
 
+  const today = new Date().toISOString().split('T')[0];
+
   const notesValue = watch('notes') || '';
+
+  const handleFormSubmit = async (data: AdminCreateLeaveRequest) => {
+    clearErrors('root');
+    try {
+      await onSubmit(data);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'OVERLAP':
+            setError('root', { message: isAdmin ? resources.errorOverlapAdmin : resources.errorOverlapEmployee });
+            break;
+          case 'TYPE_NOT_REGISTERABLE':
+            setError('leaveTypeId', { message: resources.errorLeaveTypeNotRegisterable });
+            break;
+          case 'START_DATE_IN_PAST':
+            setError('startDate', { message: resources.errorStartDatePast });
+            break;
+          default:
+            setError('root', { message: resources.errorGeneric });
+        }
+      } else {
+        setError('root', { message: resources.errorGeneric });
+      }
+    }
+  };
 
   const leaveTypeOptions = leaveTypes
     .filter((t) => isAdmin || t.registerableBy === 'Employee')
@@ -54,7 +84,7 @@ export function RegisterLeaveModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={resources.title} dataTest="LeaveForm">
-      <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+      <form className={styles.form} onSubmit={handleSubmit(handleFormSubmit)}>
         {isAdmin && !initialData?.id && (
           <Dropdown
             label="Employee"
@@ -78,13 +108,19 @@ export function RegisterLeaveModal({
         <div className={styles.dateRow}>
           <DatePicker
             label={resources.fromDateLabel}
-            {...register('startDate', { required: resources.errorRequired })}
+            {...register('startDate', {
+              required: resources.errorRequired,
+              validate: isAdmin ? undefined : (value) => value >= today || resources.errorStartDatePast,
+            })}
             error={errors.startDate?.message}
             data-test="LeaveForm_StartDateInput"
           />
           <DatePicker
             label={resources.toDateLabel}
-            {...register('endDate', { required: resources.errorRequired })}
+            {...register('endDate', {
+              required: resources.errorRequired,
+              validate: (value, formValues) => !formValues.startDate || value >= formValues.startDate || resources.errorEndBeforeStart,
+            })}
             error={errors.endDate?.message}
             data-test="LeaveForm_EndDateInput"
           />
@@ -108,6 +144,12 @@ export function RegisterLeaveModal({
           data-test="LeaveForm_NotesInput"
           data-test-char-counter="LeaveForm_NotesCharCounter"
         />
+
+        {errors.root && (
+          <div className={styles.formError} role="alert" data-test="LeaveForm_FormError">
+            {errors.root.message}
+          </div>
+        )}
 
         <div className={styles.divider} />
 

@@ -58,11 +58,11 @@ class LeaveForm {
     return cy.get(element('LeaveForm_FormError'));
   }
 
-  static fillEmployee(name: string) {
-    this.getEmployeeSelect().clear().type(name);
+  static selectEmployee(name: string) {
+    this.getEmployeeSelect().select(name);
   }
 
-  static fillLeaveType(name: string) {
+  static selectLeaveType(name: string) {
     this.getLeaveTypeSelect().select(name);
   }
 
@@ -83,7 +83,7 @@ class LeaveForm {
   }
 
   static fill(registration: TestLeaveRegistration) {
-    this.fillLeaveType(registration.leaveType.name);
+    this.selectLeaveType(registration.leaveType.name);
     this.fillStartDate(registration.startDate);
     this.fillEndDate(registration.endDate);
     if (registration.description) this.fillDescription(registration.description);

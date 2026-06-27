@@ -31,7 +31,7 @@ export function MyLeavePage() {
       setSelectedLeaveId(null);
     } catch (e) {
       console.error(e);
-      // Handle error (e.g. show toast)
+      throw e; // let RegisterLeaveModal surface the server error inline
     } finally {
       setIsSubmitting(false);
     }

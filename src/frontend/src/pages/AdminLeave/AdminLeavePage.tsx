@@ -44,6 +44,7 @@ export function AdminLeavePage() {
       setSelectedLeaveId(null);
     } catch (e) {
       console.error(e);
+      throw e; // let RegisterLeaveModal surface the server error inline
     } finally {
       setIsSubmitting(false);
     }
