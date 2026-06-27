@@ -356,6 +356,18 @@ test.describe('My Leave', () => {
       await expect(leaveForm.getEndDateInput()).toHaveValue(endDate);
       await leaveForm.cancel();
     });
+
+    test('edit form has no Employee selector', async ({ request, page, myLeavePage, leaveForm }) => {
+      const startDate = isoDate(14);
+      const endDate = isoDate(16);
+      await apiCreateMyLeave(request, eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate, endDate });
+      const resp = page.waitForResponse('**/api/me/leave');
+      await myLeavePage.visit();
+      await resp;
+      await myLeavePage.clickEdit(0);
+      await expect(leaveForm.getEmployeeSelect()).not.toBeAttached();
+      await leaveForm.cancel();
+    });
   });
 
   test.describe('description field', () => {
@@ -381,6 +393,17 @@ test.describe('My Leave', () => {
       await myLeavePage.visit();
       await resp;
       await expect(myLeavePage.getDescriptionCell(0)).toContainText(description);
+    });
+
+    test('edit form is pre-populated with the existing description', async ({ request, page, myLeavePage, leaveForm }) => {
+      const description = 'Beach holiday';
+      await apiCreateMyLeave(request, eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(14), endDate: isoDate(16), description });
+      const resp = page.waitForResponse('**/api/me/leave');
+      await myLeavePage.visit();
+      await resp;
+      await myLeavePage.clickEdit(0);
+      await expect(leaveForm.getDescriptionInput()).toHaveValue(description);
+      await leaveForm.cancel();
     });
   });
 
@@ -424,6 +447,17 @@ test.describe('My Leave', () => {
       await resp;
       await myLeavePage.getRow(0).hover();
       await expect(page.locator('[role="tooltip"]')).not.toBeAttached();
+    });
+
+    test('edit form is pre-populated with the existing notes', async ({ request, page, myLeavePage, leaveForm }) => {
+      const notes = 'Annual team retreat — flights booked';
+      await apiCreateMyLeave(request, eddieToken, { leaveTypeId: LEAVE_TYPE_VACATION.id, startDate: isoDate(14), endDate: isoDate(16), notes });
+      const resp = page.waitForResponse('**/api/me/leave');
+      await myLeavePage.visit();
+      await resp;
+      await myLeavePage.clickEdit(0);
+      await expect(leaveForm.getNotesInput()).toHaveValue(notes);
+      await leaveForm.cancel();
     });
   });
 
