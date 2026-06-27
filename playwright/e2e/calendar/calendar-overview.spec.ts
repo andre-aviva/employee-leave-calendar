@@ -96,6 +96,7 @@ test.describe('Calendar Overview', () => {
 
   test('Admin — /calendar is accessible and grid is visible', async ({ page, signInPage, calendarPage }) => {
     await page.context().clearCookies();
+    await page.evaluate(() => localStorage.clear());
     await signInPage.visit();
     await signInPage.signInAs(EMPLOYEE_ALICE_ADMIN);
     const calResp = page.waitForResponse('**/api/calendar*');
