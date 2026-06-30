@@ -77,28 +77,25 @@ describe('Calendar Overview', () => {
     CalendarPage.getLeaveChips().should('have.length.at.least', 1);
   });
 
-  it.skip('empty month — all day cells render, no leave chips (12 months ahead)', () => {
-    // Skipped: calendar incorrectly shows an error on empty months — tracked in #113
+  it('empty month — all day cells render, no leave chips (12 months ahead)', () => {
     for (let i = 0; i < 12; i++) CalendarPage.clickNextMonth();
     CalendarPage.getGrid().should('be.visible');
     CalendarPage.getLeaveChips().should('not.exist');
   });
 
-  it.skip('error state — retry button reloads data', () => {
-    // Skipped: calendar has no error-state UI yet — tracked in #123
+  it('error state — retry button reloads data', () => {
     cy.intercept('GET', '/api/calendar*', { statusCode: 500 }).as('calError');
     CalendarPage.visit();
     cy.wait('@calError');
     CalendarPage.checkErrorState();
 
-    cy.intercept('GET', '/api/calendar*').as('calOk');
+    cy.intercept('GET', '/api/calendar*', { statusCode: 200, body: [] }).as('calOk');
     CalendarPage.getRetryButton().click();
     cy.wait('@calOk');
     CalendarPage.getGrid().should('be.visible');
   });
 
-  it.skip('Admin — /calendar is accessible and grid is visible', () => {
-    // Skipped: empty month shows error instead of grid — tracked in #113
+  it('Admin — /calendar is accessible and grid is visible', () => {
     cy.clearAllCookies();
     cy.clearAllLocalStorage();
     SignInPage.visit();
@@ -133,8 +130,7 @@ describe('Calendar Overview', () => {
     CalendarPage.getLeaveChips().should('have.length.at.least', 2);
   });
 
-  it.skip('month navigation triggers a new API fetch', () => {
-    // Skipped: empty month shows error instead of grid — tracked in #113
+  it('month navigation triggers a new API fetch', () => {
     CalendarPage.clickNextMonth();
     cy.wait('@calFetch');
     CalendarPage.getGrid().should('be.visible');
@@ -252,8 +248,7 @@ describe('Calendar Overview', () => {
     cy.get('[role="tooltip"]').should('not.exist');
   });
 
-  it.skip("today's date cell is visually highlighted", () => {
-    // Skipped: empty month shows error instead of grid — tracked in #113
+  it("today's date cell is visually highlighted", () => {
     CalendarPage.getTodayCell().should('have.length', 1);
   });
 

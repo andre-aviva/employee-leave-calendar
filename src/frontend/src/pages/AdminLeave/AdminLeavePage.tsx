@@ -14,7 +14,7 @@ export function AdminLeavePage() {
   const [search, setSearch] = useState('');
   const [selectedLeaveType, setSelectedLeaveType] = useState('');
 
-  const { data: allLeave = [], isLoading } = useSWR('/api/admin/leave', () => adminApi.listAllLeave());
+  const { data: allLeave = [], error, isLoading } = useSWR('/api/admin/leave', () => adminApi.listAllLeave());
   const { data: leaveTypes = [] } = useSWR('/api/leave-types', () => referenceApi.listLeaveTypes());
   const { mutate } = useSWRConfig();
 
@@ -105,9 +105,9 @@ export function AdminLeavePage() {
 
       {isLoading ? (
         <p>Loading...</p>
-      ) : allLeave.length === 0 && !isLoading ? (
+      ) : error ? (
         <div data-test="AdminLeave_ErrorState">
-          <p>Failed to load leave data.</p>
+          <p>Something went wrong. Please try again.</p>
           <Button onClick={() => mutate('/api/admin/leave')} data-test="AdminLeave_RetryButton">Retry</Button>
         </div>
       ) : (
