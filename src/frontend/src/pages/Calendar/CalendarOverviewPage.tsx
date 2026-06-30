@@ -24,7 +24,7 @@ export function CalendarOverviewPage() {
   const from = toIsoDate(new Date(year, month, 1));
   const to = toIsoDate(new Date(year, month + 1, 0));
 
-  const { data: calendarData = [], isLoading } = useSWR(
+  const { data: calendarData = [], error, isLoading } = useSWR(
     `/api/calendar?from=${from}&to=${to}`,
     () => client.get<CalendarEntryDto[]>(`/api/calendar?from=${from}&to=${to}`)
   );
@@ -119,9 +119,9 @@ export function CalendarOverviewPage() {
 
       {isLoading ? (
         <p>Loading calendar...</p>
-      ) : calendarData.length === 0 && !isLoading ? (
+      ) : error ? (
         <div data-test="CalendarPage_ErrorState">
-          <p>Failed to load calendar data.</p>
+          <p>Something went wrong. Please try again.</p>
           <Button onClick={() => mutate(`/api/calendar?from=${from}&to=${to}`)} data-test="CalendarPage_RetryButton">Retry</Button>
         </div>
       ) : (

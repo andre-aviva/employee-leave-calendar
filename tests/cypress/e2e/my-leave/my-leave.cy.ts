@@ -49,20 +49,18 @@ describe('My Leave', () => {
       MyLeavePage.checkEmptyState();
     });
 
-    it.skip('shows error state when API returns 500', () => {
-      // Skipped: MyLeavePage has no error-state UI yet — tracked in #103
+    it('shows error state when API returns 500', () => {
       cy.intercept('GET', '/api/me/leave', { statusCode: 500 }).as('leaveError');
       MyLeavePage.visit();
       cy.wait('@leaveError');
       MyLeavePage.checkErrorState();
     });
 
-    it.skip('retry button reloads data after error', () => {
-      // Skipped: MyLeavePage has no error-state UI yet — tracked in #103
+    it('retry button reloads data after error', () => {
       cy.intercept('GET', '/api/me/leave', { statusCode: 500 }).as('leaveError');
       MyLeavePage.visit();
       cy.wait('@leaveError');
-      cy.intercept('GET', '/api/me/leave').as('leaveOk');
+      cy.intercept('GET', '/api/me/leave', { statusCode: 200, body: [] }).as('leaveOk');
       MyLeavePage.getRetryButton().click();
       cy.wait('@leaveOk');
       MyLeavePage.getEmptyState().should('be.visible');

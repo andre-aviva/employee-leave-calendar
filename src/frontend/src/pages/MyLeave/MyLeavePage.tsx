@@ -10,7 +10,7 @@ import styles from './MyLeavePage.module.scss';
 import { resources } from './MyLeavePage.resources';
 
 export function MyLeavePage() {
-  const { data: leaveRegistrations = [], isLoading } = useSWR(MY_LEAVE_PATH, () => leaveApi.listMyLeave());
+  const { data: leaveRegistrations = [], error, isLoading } = useSWR(MY_LEAVE_PATH, () => leaveApi.listMyLeave());
   const { mutate } = useSWRConfig();
 
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -80,6 +80,11 @@ export function MyLeavePage() {
 
       {isLoading ? (
         <p>Loading...</p>
+      ) : error ? (
+        <div data-test="MyLeave_ErrorState">
+          <p>Something went wrong. Please try again.</p>
+          <Button onClick={() => mutate(MY_LEAVE_PATH)} data-test="MyLeave_RetryButton">Retry</Button>
+        </div>
       ) : (
         <LeaveDataTable
           data={leaveRegistrations}
